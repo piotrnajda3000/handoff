@@ -1,0 +1,21 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "test:e2e": "cypress run --spec 'cypress/e2e/**/*.feature'",
+    "test:e2e:headed": "cypress run --spec 'cypress/e2e/**/*.feature' --headed",
+    "test:component": "cypress run --component",
+    "dev:app": "cd .. && yarn dev",
+    "test:e2e:dev": "echo 'Make sure to run: yarn dev:app' && yarn test:e2e"
+  },
+  "devDependencies": {
+    "@badeball/cypress-cucumber-preprocessor": "^23.1.0",
+    "@bahmutov/cypress-esbuild-preprocessor": "^2.2.6",
+    "cypress": "^15.2.0",
+    "esbuild": "^0.25.10"
+  }
+}

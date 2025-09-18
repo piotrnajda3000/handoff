@@ -23,7 +23,7 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <MantineProvider defaultColorScheme="dark">
+      <MantineProvider defaultColorScheme="light">
         <RouterProvider router={router} />
       </MantineProvider>
     </StrictMode>
