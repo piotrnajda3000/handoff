@@ -17,34 +17,6 @@ The `FileDropzone` component creates a visually appealing upload area where user
 - 📊 **File Preview** - Shows selected files with names and sizes
 - 🎨 **Mantine Integration** - Styled with Mantine design system
 
-## Props
-
-```typescript
-interface FileDropzoneProps {
-  files: FileWithPath[];
-  onDrop: (files: FileWithPath[]) => void;
-  onReject: (files: FileRejection[]) => void;
-}
-```
-
-### `files`
-
-- **Type**: `FileWithPath[]`
-- **Description**: Array of currently selected files to display in the preview
-- **Required**: Yes
-
-### `onDrop`
-
-- **Type**: `(files: FileWithPath[]) => void`
-- **Description**: Callback function called when files are successfully dropped or selected
-- **Required**: Yes
-
-### `onReject`
-
-- **Type**: `(files: FileRejection[]) => void`
-- **Description**: Callback function called when files are rejected due to validation failures
-- **Required**: Yes
-
 ## File Restrictions
 
 ### Accepted File Types
@@ -64,65 +36,6 @@ interface FileDropzoneProps {
 ### File Size Limit
 
 - Maximum: 5MB per file
-
-## Usage
-
-### Basic Implementation
-
-```typescript
-import { useState } from "react";
-import { type FileWithPath, type FileRejection } from "@mantine/dropzone";
-import { FileDropzone } from "../components/dropzone/dropzone";
-
-function MyComponent() {
-  const [files, setFiles] = useState<FileWithPath[]>([]);
-
-  const handleDrop = (droppedFiles: FileWithPath[]) => {
-    setFiles(droppedFiles);
-    // Process the files (upload, read, etc.)
-  };
-
-  const handleReject = (rejectedFiles: FileRejection[]) => {
-    console.log("Files rejected:", rejectedFiles);
-    // Handle rejected files (show error message, etc.)
-  };
-
-  return (
-    <FileDropzone
-      files={files}
-      onDrop={handleDrop}
-      onReject={handleReject}
-    />
-  );
-}
-```
-
-### With File Processing
-
-```typescript
-const handleDrop = (droppedFiles: FileWithPath[]) => {
-  setFiles(droppedFiles);
-
-  // Example: Read file contents
-  droppedFiles.forEach((file) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      console.log(`Content of ${file.name}:`, content);
-    };
-    reader.readAsText(file);
-  });
-};
-
-const handleReject = (rejectedFiles: FileRejection[]) => {
-  rejectedFiles.forEach((rejection) => {
-    console.log(`File ${rejection.file.name} rejected:`, rejection.errors);
-  });
-
-  // Show user-friendly error messages
-  setErrorMessage("Some files were rejected. Please check file type and size.");
-};
-```
 
 ## Visual States
 
@@ -153,31 +66,6 @@ When files are selected, the component displays:
   - 📄 File emoji
   - File name
   - File size in KB (formatted to 1 decimal place)
-
-## Dependencies
-
-This component requires the following packages:
-
-- `@mantine/dropzone` - Core dropzone functionality
-- `@mantine/core` - UI components (Box, Text, Group, rem)
-- `@tabler/icons-react` - Icons (IconUpload, IconFile, IconX)
-- `react` - React hooks (implicit dependency)
-
-## Styling
-
-The component uses Mantine's CSS variables for consistent theming:
-
-- `--mantine-color-gray-4` - Border color
-- `--mantine-radius-md` - Border radius
-- `--mantine-color-blue-6` - Accept state color
-- `--mantine-color-red-6` - Reject state color
-- `--mantine-color-dimmed` - Idle state color
-
-## Accessibility
-
-- **Keyboard Navigation**: Supports keyboard interaction through Mantine's built-in accessibility
-- **Screen Readers**: Text descriptions provide context for assistive technologies
-- **Focus Management**: Proper focus states for keyboard users
 
 ## Error Handling
 

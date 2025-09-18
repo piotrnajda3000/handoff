@@ -18,7 +18,7 @@ export function FileDropzone({ files, onDrop, onReject }: FileDropzoneProps) {
       <Dropzone
         onDrop={onDrop}
         onReject={onReject}
-        maxSize={5 * 1024 ** 2} // 5MB
+        maxSize={5 * 1024 ** 2}
         accept={[
           "text/javascript",
           "application/javascript",
