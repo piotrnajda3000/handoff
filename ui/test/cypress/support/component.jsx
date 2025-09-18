@@ -16,18 +16,16 @@
 // Import commands.js using ES2015 syntax:
 import "./commands";
 
-// Import CSS for proper styling
-import "../../src/main.css";
+// Import shared setup that matches production environment
+// @ts-expect-error - setup.jsx is a JSX file
+import { TestWrapper } from "../../../src/setup.jsx";
 
 import { mount } from "cypress/react";
-import { MantineProvider } from "@mantine/core";
+import React from "react";
 
-// Create a custom mount command that wraps components with necessary providers
+// Create a custom mount command that wraps components with the same providers as production
 Cypress.Commands.add("mount", (component, options) => {
-  const wrapped = (
-    <MantineProvider defaultColorScheme="light">{component}</MantineProvider>
-  );
-
+  const wrapped = React.createElement(TestWrapper, {}, component);
   return mount(wrapped, options);
 });
 

@@ -28,6 +28,7 @@ export function FileDropzone({ files, onDrop, onReject }: FileDropzoneProps) {
           "text/x-typescript",
         ]}
         multiple
+        data-qa="dropzone-container"
         style={{
           minHeight: rem(220),
           display: "flex",
@@ -44,9 +45,11 @@ export function FileDropzone({ files, onDrop, onReject }: FileDropzoneProps) {
           justify="center"
           gap="xl"
           style={{ minHeight: rem(220), pointerEvents: "none" }}
+          data-qa="dropzone-content"
         >
           <Dropzone.Accept>
             <IconUpload
+              data-qa="dropzone-accept-icon"
               style={{
                 width: rem(52),
                 height: rem(52),
@@ -57,6 +60,7 @@ export function FileDropzone({ files, onDrop, onReject }: FileDropzoneProps) {
           </Dropzone.Accept>
           <Dropzone.Reject>
             <IconX
+              data-qa="dropzone-reject-icon"
               style={{
                 width: rem(52),
                 height: rem(52),
@@ -67,6 +71,7 @@ export function FileDropzone({ files, onDrop, onReject }: FileDropzoneProps) {
           </Dropzone.Reject>
           <Dropzone.Idle>
             <IconFile
+              data-qa="dropzone-idle-icon"
               style={{
                 width: rem(52),
                 height: rem(52),
@@ -76,14 +81,26 @@ export function FileDropzone({ files, onDrop, onReject }: FileDropzoneProps) {
             />
           </Dropzone.Idle>
 
-          <div>
-            <Text size="xl" inline>
+          <div data-qa="dropzone-text-content">
+            <Text size="xl" inline data-qa="dropzone-title">
               Drag files here or click to select
             </Text>
-            <Text size="sm" c="dimmed" inline mt={7}>
+            <Text
+              size="sm"
+              c="dimmed"
+              inline
+              mt={7}
+              data-qa="dropzone-file-types"
+            >
               Upload TypeScript (.ts, .tsx) or JavaScript (.js, .jsx) files
             </Text>
-            <Text size="sm" c="dimmed" inline mt={7}>
+            <Text
+              size="sm"
+              c="dimmed"
+              inline
+              mt={7}
+              data-qa="dropzone-size-limit"
+            >
               Files should not exceed 5MB
             </Text>
           </div>
@@ -91,12 +108,17 @@ export function FileDropzone({ files, onDrop, onReject }: FileDropzoneProps) {
       </Dropzone>
 
       {files.length > 0 && (
-        <Box>
-          <Text fw={500} mb="sm">
+        <Box data-qa="selected-files-section">
+          <Text fw={500} mb="sm" data-qa="selected-files-title">
             Selected files:
           </Text>
           {files.map((file, index) => (
-            <Text key={index} size="sm" c="dimmed">
+            <Text
+              key={index}
+              size="sm"
+              c="dimmed"
+              data-qa={`selected-file-${index}`}
+            >
               📄 {file.name} ({(file.size / 1024).toFixed(1)} KB)
             </Text>
           ))}

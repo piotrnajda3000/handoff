@@ -1,8 +1,8 @@
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
-import { MantineProvider } from "@mantine/core";
-import "./main.css";
+// @ts-expect-error - setup.jsx is a JSX file
+import { createAppWrapper } from "./setup.jsx";
 
 // Import the generated route tree
 import { routeTree } from "./routeTree.gen";
@@ -23,9 +23,7 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement);
   root.render(
     <StrictMode>
-      <MantineProvider defaultColorScheme="light">
-        <RouterProvider router={router} />
-      </MantineProvider>
+      {createAppWrapper(<RouterProvider router={router} />)}
     </StrictMode>
   );
 }
