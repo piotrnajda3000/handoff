@@ -63,19 +63,13 @@ describe("FileDropzone Component", () => {
 
     // Check selected files section is visible
     cy.get('[data-qa="selected-files-section"]').should("be.visible");
-    cy.get('[data-qa="selected-files-title"]').should(
-      "contain",
-      "Selected files:"
-    );
+    cy.get('[data-qa="selected-files-title"]').should("contain", "Files:");
 
     // Check individual files are displayed
-    cy.get('[data-qa="selected-file-0"]').should(
-      "contain",
-      "📄 test.ts (1.0 KB)"
-    );
+    cy.get('[data-qa="selected-file-0"]').should("contain", "test.ts (1.0 KB)");
     cy.get('[data-qa="selected-file-1"]').should(
       "contain",
-      "📄 component.tsx (2.0 KB)"
+      "component.tsx (2.0 KB)"
     );
   });
 
@@ -402,6 +396,277 @@ describe("FileDropzone Component", () => {
       cy.get('[data-qa="delete-file-0"]')
         .should("be.visible")
         .should("have.attr", "type", "button");
+    });
+  });
+
+  describe("Rejected Files Display", () => {
+    let mockOnDeleteRejected: sinon.SinonStub;
+    let mockOnDelete: sinon.SinonStub;
+
+    beforeEach(() => {
+      mockOnDeleteRejected = Cypress.sinon.stub();
+      mockOnDelete = Cypress.sinon.stub();
+    });
+
+    it("displays rejected files with error icons", () => {
+      const rejectedFiles = [
+        {
+          file: {
+            name: "document.pdf",
+            size: 1024,
+            path: "/document.pdf",
+          } as FileWithPath,
+          errors: [
+            {
+              code: "file-invalid-type",
+              message:
+                "File type not allowed. Only .js, .jsx, .ts, .tsx files are accepted.",
+            },
+          ],
+        },
+        {
+          file: {
+            name: "image.png",
+            size: 2048,
+            path: "/image.png",
+          } as FileWithPath,
+          errors: [
+            {
+              code: "file-invalid-type",
+              message:
+                "File type not allowed. Only .js, .jsx, .ts, .tsx files are accepted.",
+            },
+          ],
+        },
+      ];
+
+      cy.mount(
+        <FileDropzone
+          files={[]}
+          rejectedFiles={rejectedFiles}
+          onDrop={mockOnDrop}
+          onReject={mockOnReject}
+          onDeleteRejected={mockOnDeleteRejected}
+        />
+      );
+
+      // Check that files section is visible
+      cy.get('[data-qa="selected-files-section"]').should("be.visible");
+      cy.get('[data-qa="selected-files-title"]').should("contain", "Files:");
+
+      // Check rejected files are displayed with error styling
+      cy.get('[data-qa="rejected-file-0"]').should("be.visible");
+      cy.get('[data-qa="rejected-file-1"]').should("be.visible");
+
+      // Check file names are displayed in red text
+      cy.get('[data-qa="rejected-file-0"]').should(
+        "contain",
+        "document.pdf (1.0 KB)"
+      );
+      cy.get('[data-qa="rejected-file-1"]').should(
+        "contain",
+        "image.png (2.0 KB)"
+      );
+    });
+
+    it("calls onDeleteRejected with correct index when delete button is clicked", () => {
+      const rejectedFiles = [
+        {
+          file: {
+            name: "first.pdf",
+            size: 1024,
+            path: "/first.pdf",
+          } as FileWithPath,
+          errors: [
+            {
+              code: "file-invalid-type",
+              message:
+                "File type not allowed. Only .js, .jsx, .ts, .tsx files are accepted.",
+            },
+          ],
+        },
+        {
+          file: {
+            name: "second.txt",
+            size: 2048,
+            path: "/second.txt",
+          } as FileWithPath,
+          errors: [
+            {
+              code: "file-invalid-type",
+              message:
+                "File type not allowed. Only .js, .jsx, .ts, .tsx files are accepted.",
+            },
+          ],
+        },
+      ];
+
+      cy.mount(
+        <FileDropzone
+          files={[]}
+          rejectedFiles={rejectedFiles}
+          onDrop={mockOnDrop}
+          onReject={mockOnReject}
+          onDeleteRejected={mockOnDeleteRejected}
+        />
+      );
+
+      // Click delete button for first rejected file (index 0)
+      cy.get('[data-qa="delete-rejected-file-0"]').click();
+
+      // Verify callback was called with correct index
+      cy.then(() => {
+        expect(mockOnDeleteRejected.calledOnce).to.be.true;
+        expect(mockOnDeleteRejected.getCall(0).args[0]).to.equal(0);
+      });
+
+      // Click delete button for second rejected file (index 1)
+      cy.get('[data-qa="delete-rejected-file-1"]').click();
+
+      cy.then(() => {
+        expect(mockOnDeleteRejected.callCount).to.equal(2);
+        expect(mockOnDeleteRejected.getCall(1).args[0]).to.equal(1);
+      });
+    });
+
+    it("displays both accepted and rejected files together", () => {
+      const acceptedFiles = [
+        { name: "component.tsx", size: 1024, path: "/component.tsx" },
+      ] as FileWithPath[];
+
+      const rejectedFiles = [
+        {
+          file: {
+            name: "document.pdf",
+            size: 512,
+            path: "/document.pdf",
+          } as FileWithPath,
+          errors: [
+            {
+              code: "file-invalid-type",
+              message:
+                "File type not allowed. Only .js, .jsx, .ts, .tsx files are accepted.",
+            },
+          ],
+        },
+      ];
+
+      cy.mount(
+        <FileDropzone
+          files={acceptedFiles}
+          rejectedFiles={rejectedFiles}
+          onDrop={mockOnDrop}
+          onReject={mockOnReject}
+          onDelete={mockOnDelete}
+          onDeleteRejected={mockOnDeleteRejected}
+        />
+      );
+
+      // Check both sections are visible
+      cy.get('[data-qa="selected-files-section"]').should("be.visible");
+
+      // Check accepted file is displayed normally
+      cy.get('[data-qa="selected-file-0"]').should(
+        "contain",
+        "component.tsx (1.0 KB)"
+      );
+
+      // Check rejected file is displayed with error styling
+      cy.get('[data-qa="rejected-file-0"]').should(
+        "contain",
+        "document.pdf (0.5 KB)"
+      );
+
+      // Check that both delete buttons exist and are different
+      cy.get('[data-qa="delete-file-0"]').should("exist");
+      cy.get('[data-qa="delete-rejected-file-0"]').should("exist");
+    });
+  });
+
+  describe("Manual File Validation", () => {
+    it("manually validates file extensions and rejects invalid types", () => {
+      cy.mount(
+        <FileDropzone files={[]} onDrop={mockOnDrop} onReject={mockOnReject} />
+      );
+
+      // Create files with various extensions - some that might pass MIME validation but should fail manual validation
+      cy.writeFile("/tmp/cypress-test.py", "print('Hello World')");
+      cy.writeFile("/tmp/cypress-test.java", "public class Test {}");
+      cy.writeFile("/tmp/cypress-test.cpp", "#include <iostream>");
+
+      // Try to upload invalid file types
+      cy.get('[data-qa="dropzone-container"]').selectFile(
+        "/tmp/cypress-test.py",
+        { action: "drag-drop" }
+      );
+
+      // Verify rejection callback was called for invalid extension
+      cy.then(() => {
+        expect(mockOnReject.called).to.be.true;
+      });
+    });
+
+    it("accepts valid JavaScript and TypeScript extensions", () => {
+      cy.mount(
+        <FileDropzone files={[]} onDrop={mockOnDrop} onReject={mockOnReject} />
+      );
+
+      // Create files with valid extensions
+      cy.writeFile("/tmp/cypress-valid.js", "const x = 1;");
+      cy.writeFile(
+        "/tmp/cypress-valid.jsx",
+        "export default function() { return null; }"
+      );
+      cy.writeFile("/tmp/cypress-valid.ts", "const y: number = 1;");
+      cy.writeFile(
+        "/tmp/cypress-valid.tsx",
+        "export const Component = () => <div />;"
+      );
+
+      // Test each valid file type
+      const validFiles = [
+        "/tmp/cypress-valid.js",
+        "/tmp/cypress-valid.jsx",
+        "/tmp/cypress-valid.ts",
+        "/tmp/cypress-valid.tsx",
+      ];
+
+      validFiles.forEach((file) => {
+        // Reset mocks for each iteration
+        mockOnDrop.resetHistory();
+        mockOnReject.resetHistory();
+
+        cy.get('[data-qa="dropzone-container"]').selectFile(file, {
+          action: "drag-drop",
+        });
+
+        cy.then(() => {
+          expect(mockOnDrop.called).to.be.true;
+          expect(mockOnReject.called).to.be.false;
+        });
+      });
+    });
+
+    it("handles mixed valid and invalid files correctly", () => {
+      cy.mount(
+        <FileDropzone files={[]} onDrop={mockOnDrop} onReject={mockOnReject} />
+      );
+
+      // Create one valid and one invalid file
+      cy.writeFile("/tmp/cypress-mixed-valid.ts", "export const valid = true;");
+      cy.writeFile("/tmp/cypress-mixed-invalid.txt", "This is invalid");
+
+      // Upload both files together
+      cy.get('[data-qa="dropzone-container"]').selectFile(
+        ["/tmp/cypress-mixed-valid.ts", "/tmp/cypress-mixed-invalid.txt"],
+        { action: "drag-drop" }
+      );
+
+      // Both callbacks should be called - onDrop for valid, onReject for invalid
+      cy.then(() => {
+        expect(mockOnDrop.called).to.be.true;
+        expect(mockOnReject.called).to.be.true;
+      });
     });
   });
 });

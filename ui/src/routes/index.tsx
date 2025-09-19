@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { type FileWithPath, type FileRejection } from "@mantine/dropzone";
 import {
   Container,
   Paper,
@@ -9,33 +8,22 @@ import {
   Text,
   Box,
 } from "@mantine/core";
-import { useState } from "react";
 import { FileDropzone } from "../components/dropzone/dropzone";
+import { useDropzone } from "../components/dropzone/use-dropzone";
 
 export const Route = createFileRoute("/")({
   component: Index,
 });
 
 function Index() {
-  const [files, setFiles] = useState<FileWithPath[]>([]);
-
-  const handleDrop = (droppedFiles: FileWithPath[]) => {
-    setFiles((prevFiles) => [...prevFiles, ...droppedFiles]);
-    console.log("Files dropped:", droppedFiles);
-  };
-
-  const handleReject = (rejectedFiles: FileRejection[]) => {
-    console.log("Files rejected:", rejectedFiles);
-  };
-
-  const handleDelete = (index: number) => {
-    setFiles((currentFiles) => {
-      const newFiles = [...currentFiles];
-      newFiles.splice(index, 1);
-      return newFiles;
-    });
-    console.log("File deleted at index:", index);
-  };
+  const {
+    files,
+    rejectedFiles,
+    handleDrop,
+    handleReject,
+    handleDelete,
+    handleDeleteRejected,
+  } = useDropzone();
 
   return (
     <Container size="md" style={{ height: "100vh" }}>
@@ -58,9 +46,11 @@ function Index() {
 
             <FileDropzone
               files={files}
+              rejectedFiles={rejectedFiles}
               onDrop={handleDrop}
               onReject={handleReject}
               onDelete={handleDelete}
+              onDeleteRejected={handleDeleteRejected}
             />
           </Stack>
         </Paper>
