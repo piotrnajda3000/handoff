@@ -304,7 +304,7 @@ describe("FileDropzone Component", () => {
     });
   });
 
-  it("has proper accessibility attributes", () => {
+  it("has proper accessibility attributesa", () => {
     cy.mount(
       <FileDropzone
         files={testFiles}
@@ -317,5 +317,91 @@ describe("FileDropzone Component", () => {
     cy.get('[data-qa="dropzone-container"]')
       .should("have.css", "cursor", "pointer")
       .should("be.visible");
+  });
+
+  describe("File Deletion", () => {
+    let mockOnDelete: sinon.SinonStub;
+
+    beforeEach(() => {
+      mockOnDelete = Cypress.sinon.stub();
+    });
+
+    it("calls onDelete with correct index when delete button is clicked", () => {
+      const mockFiles = [
+        { name: "first.ts", size: 1024, path: "/first.ts" },
+        { name: "second.tsx", size: 2048, path: "/second.tsx" },
+        { name: "third.js", size: 512, path: "/third.js" },
+      ] as FileWithPath[];
+
+      cy.mount(
+        <FileDropzone
+          files={mockFiles}
+          onDrop={mockOnDrop}
+          onReject={mockOnReject}
+          onDelete={mockOnDelete}
+        />
+      );
+
+      // Click delete button for second file (index 1)
+      cy.get('[data-qa="delete-file-1"]').click();
+
+      // Verify callback was called with correct index
+      cy.then(() => {
+        expect(mockOnDelete.calledOnce).to.be.true;
+        expect(mockOnDelete.getCall(0).args[0]).to.equal(1);
+      });
+    });
+
+    it("calls onDelete with correct index for different files", () => {
+      const mockFiles = [
+        { name: "alpha.ts", size: 1024, path: "/alpha.ts" },
+        { name: "beta.tsx", size: 2048, path: "/beta.tsx" },
+      ] as FileWithPath[];
+
+      cy.mount(
+        <FileDropzone
+          files={mockFiles}
+          onDrop={mockOnDrop}
+          onReject={mockOnReject}
+          onDelete={mockOnDelete}
+        />
+      );
+
+      // Click delete button for first file (index 0)
+      cy.get('[data-qa="delete-file-0"]').click();
+
+      cy.then(() => {
+        expect(mockOnDelete.calledOnce).to.be.true;
+        expect(mockOnDelete.getCall(0).args[0]).to.equal(0);
+      });
+
+      // Click delete button for second file (index 1)
+      cy.get('[data-qa="delete-file-1"]').click();
+
+      cy.then(() => {
+        expect(mockOnDelete.callCount).to.equal(2);
+        expect(mockOnDelete.getCall(1).args[0]).to.equal(1);
+      });
+    });
+
+    it("has proper styling for delete buttons", () => {
+      const mockFiles = [
+        { name: "test.ts", size: 1024, path: "/test.ts" },
+      ] as FileWithPath[];
+
+      cy.mount(
+        <FileDropzone
+          files={mockFiles}
+          onDrop={mockOnDrop}
+          onReject={mockOnReject}
+          onDelete={mockOnDelete}
+        />
+      );
+
+      // Check that delete button is styled as expected
+      cy.get('[data-qa="delete-file-0"]')
+        .should("be.visible")
+        .should("have.attr", "type", "button");
+    });
   });
 });

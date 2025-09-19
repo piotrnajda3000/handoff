@@ -3,43 +3,37 @@ import {
   type FileWithPath,
   type FileRejection,
 } from "@mantine/dropzone";
-import { Box, Text, Group, rem } from "@mantine/core";
+import { Box, Text, Group, rem, ActionIcon } from "@mantine/core";
 import { IconUpload, IconFile, IconX } from "@tabler/icons-react";
+import classes from "./dropzone.module.css";
 
 interface FileDropzoneProps {
   files: FileWithPath[];
   onDrop: (files: FileWithPath[]) => void;
   onReject: (files: FileRejection[]) => void;
+  onDelete?: (index: number) => void;
 }
 
-export function FileDropzone({ files, onDrop, onReject }: FileDropzoneProps) {
+export function FileDropzone({
+  files,
+  onDrop,
+  onReject,
+  onDelete,
+}: FileDropzoneProps) {
   return (
     <>
       <Dropzone
         onDrop={onDrop}
         onReject={onReject}
         maxSize={5 * 1024 ** 2}
-        accept={[
-          "text/javascript",
-          "application/javascript",
-          "text/x-javascript",
-          "text/typescript",
-          "application/typescript",
-          "text/x-typescript",
-        ]}
+        accept={{
+          "application/javascript": [".js", ".jsx"],
+          "application/typescript": [".ts", ".tsx"],
+          "text/*": [".js", ".jsx", ".ts", ".tsx"],
+        }}
         multiple
         data-qa="dropzone-container"
-        style={{
-          minHeight: rem(220),
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          border: "2px dashed var(--mantine-color-gray-4)",
-          borderRadius: "var(--mantine-radius-md)",
-          cursor: "pointer",
-          transition: "border-color 0.2s ease",
-        }}
+        className={classes.root}
       >
         <Group
           justify="center"
@@ -113,14 +107,29 @@ export function FileDropzone({ files, onDrop, onReject }: FileDropzoneProps) {
             Selected files:
           </Text>
           {files.map((file, index) => (
-            <Text
+            <Group
               key={index}
-              size="sm"
-              c="dimmed"
+              justify="space-between"
+              align="center"
+              mb="xs"
               data-qa={`selected-file-${index}`}
             >
-              📄 {file.name} ({(file.size / 1024).toFixed(1)} KB)
-            </Text>
+              <Text size="sm" c="dimmed">
+                📄 {file.name} ({(file.size / 1024).toFixed(1)} KB)
+              </Text>
+              {onDelete && (
+                <ActionIcon
+                  size="sm"
+                  variant="subtle"
+                  color="red"
+                  onClick={() => onDelete(index)}
+                  data-qa={`delete-file-${index}`}
+                  aria-label={`Delete ${file.name}`}
+                >
+                  <IconX size={16} />
+                </ActionIcon>
+              )}
+            </Group>
           ))}
         </Box>
       )}

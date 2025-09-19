@@ -1,0 +1,33 @@
+.root {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed var(--mantine-color-gray-4);
+  border-radius: var(--mantine-radius-md);
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+
+  &[data-accept] {
+    border-style: solid;
+    border-color: var(--mantine-color-blue-6);
+    /* background-color: color-mix(
+      in srgb,
+      var(--mantine-color-blue-6) 10%,
+      transparent
+    ); */
+  }
+
+  &[data-reject] {
+    border-style: solid;
+    border-color: var(--mantine-color-red-6);
+    /* background-color: color-mix(
+      in srgb,
+      var(--mantine-color-red-6) 10%,
+      transparent
+    ); */
+  }
+}

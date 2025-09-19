@@ -41,5 +41,6 @@ module.exports = defineConfig({
       return config;
     },
     supportFile: "cypress/support/e2e.js",
+    experimentalRunAllSpecs: true,
   },
 });

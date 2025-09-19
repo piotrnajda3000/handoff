@@ -20,12 +20,21 @@ function Index() {
   const [files, setFiles] = useState<FileWithPath[]>([]);
 
   const handleDrop = (droppedFiles: FileWithPath[]) => {
-    setFiles(droppedFiles);
+    setFiles((prevFiles) => [...prevFiles, ...droppedFiles]);
     console.log("Files dropped:", droppedFiles);
   };
 
   const handleReject = (rejectedFiles: FileRejection[]) => {
     console.log("Files rejected:", rejectedFiles);
+  };
+
+  const handleDelete = (index: number) => {
+    setFiles((currentFiles) => {
+      const newFiles = [...currentFiles];
+      newFiles.splice(index, 1);
+      return newFiles;
+    });
+    console.log("File deleted at index:", index);
   };
 
   return (
@@ -51,6 +60,7 @@ function Index() {
               files={files}
               onDrop={handleDrop}
               onReject={handleReject}
+              onDelete={handleDelete}
             />
           </Stack>
         </Paper>

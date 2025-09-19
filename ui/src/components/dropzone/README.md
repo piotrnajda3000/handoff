@@ -15,6 +15,7 @@ The `FileDropzone` component creates a visually appealing upload area where user
 - 🔄 **Multiple File Support** - Can handle multiple files simultaneously
 - 👀 **Visual Feedback** - Different icons and colors for accept/reject/idle states
 - 📊 **File Preview** - Shows selected files with names and sizes
+- ❌ **File Deletion** - Remove individual files with X icon buttons
 - 🎨 **Mantine Integration** - Styled with Mantine design system
 
 ## File Restrictions
@@ -66,6 +67,17 @@ When files are selected, the component displays:
   - 📄 File emoji
   - File name
   - File size in KB (formatted to 1 decimal place)
+  - ❌ Delete button (if `onDelete` prop is provided)
+
+## File Deletion
+
+The component supports individual file deletion when the `onDelete` callback is provided:
+
+- **Delete Button**: Red X icon button appears next to each file
+- **Accessibility**: Includes proper ARIA labels for screen readers
+- **Callback**: `onDelete(index: number)` called when delete button is clicked
+- **Visual Design**: Subtle red button that becomes more prominent on hover
+- **Conditional Rendering**: Delete buttons only appear when `onDelete` prop is provided
 
 ## Error Handling
 
@@ -85,6 +97,7 @@ The component can be extended by:
 - Adjusting `maxSize` for different size limits
 - Customizing styling through the `style` prop
 - Adding additional validation in the callback functions
+- Providing an `onDelete` callback to enable file deletion functionality
 
 ## Example Integration
 
