@@ -180,18 +180,12 @@ export function FileDropzone({
       </Dropzone>
 
       {(files.length > 0 || rejectedFiles.length > 0) && (
-        <Box data-qa="selected-files-section">
-          <Text fw={500} mb="sm" data-qa="selected-files-title">
-            Files:
-          </Text>
-
-          {/* Accepted files */}
+        <Box data-qa="selected-files-section" className="flex flex-col gap-xs">
           {files.map((file, index) => (
             <Group
               key={`accepted-${index}`}
               justify="space-between"
               align="center"
-              mb="xs"
               data-qa={`selected-file-${index}`}
             >
               <Group gap="xs" align="center">
@@ -221,7 +215,6 @@ export function FileDropzone({
               key={`rejected-${index}`}
               justify="space-between"
               align="center"
-              mb="xs"
               data-qa={`rejected-file-${index}`}
             >
               <Group gap="xs" align="center">

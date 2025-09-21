@@ -63,7 +63,6 @@ describe("FileDropzone Component", () => {
 
     // Check selected files section is visible
     cy.get('[data-qa="selected-files-section"]').should("be.visible");
-    cy.get('[data-qa="selected-files-title"]').should("contain", "Files:");
 
     // Check individual files are displayed
     cy.get('[data-qa="selected-file-0"]').should("contain", "test.ts (1.0 KB)");
@@ -452,7 +451,6 @@ describe("FileDropzone Component", () => {
 
       // Check that files section is visible
       cy.get('[data-qa="selected-files-section"]').should("be.visible");
-      cy.get('[data-qa="selected-files-title"]').should("contain", "Files:");
 
       // Check rejected files are displayed with error styling
       cy.get('[data-qa="rejected-file-0"]').should("be.visible");
