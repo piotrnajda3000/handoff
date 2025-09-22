@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Container, Paper, Stack, Center, Box, Stepper } from "@mantine/core";
 import { useDropzone } from "../../components/dropzone/use-dropzone";
+import { useDependencies } from "../../hooks/use-dependencies";
 import { StepperNavigationButtons } from "../../components/stepper-navigation-buttons";
 import { StepOneUploadFiles } from "./-components/step-one-upload-files/step-one-upload-files";
 import { StepTwoDescribeRelations } from "./-components/step-two-describe-relations/step-two-describe-relations";
@@ -21,6 +22,8 @@ function Index() {
     handleDelete,
     handleDeleteRejected,
   } = useDropzone();
+
+  const dependenciesData = useDependencies(files);
 
   const stepTitles = ["Upload Files", "Generate Tests", "Review Results"];
   const totalSteps = stepTitles.length;
@@ -69,7 +72,12 @@ function Index() {
           />
         );
       case 1:
-        return <StepTwoDescribeRelations files={files} />;
+        return (
+          <StepTwoDescribeRelations
+            files={files}
+            dependenciesData={dependenciesData}
+          />
+        );
       case 2:
         return <StepThreeViewResults />;
       default:

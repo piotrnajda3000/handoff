@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "test:watch": "vitest --watch"
   },
   "dependencies": {
     "@mantine/core": "^8.1.2",
@@ -20,7 +21,9 @@
     "@tailwindcss/vite": "^4.1.11",
     "@tanstack/react-router": "^1.124.0",
     "@tanstack/react-router-devtools": "^1.124.0",
+    "@types/d3": "^7.4.3",
     "clsx": "^2.1.1",
+    "d3": "^7.9.0",
     "dexie": "^4.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
