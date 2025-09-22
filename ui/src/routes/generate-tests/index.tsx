@@ -1,25 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Container,
-  Paper,
-  Stack,
-  Center,
-  Title,
-  Text,
-  Box,
-  Button,
-  Group,
-  Stepper,
-  Tooltip,
-} from "@mantine/core";
-import {
-  IconChevronLeft,
-  IconChevronRight,
-  IconCheck,
-} from "@tabler/icons-react";
-import { FileDropzone } from "../../components/dropzone/dropzone";
+import { Container, Paper, Stack, Center, Box, Stepper } from "@mantine/core";
 import { useDropzone } from "../../components/dropzone/use-dropzone";
+import { StepperNavigationButtons } from "../../components/stepper-navigation-buttons";
+import { StepOneUploadFiles } from "./-components/step-one-upload-files/step-one-upload-files";
+import { StepTwoDescribeRelations } from "./-components/step-two-describe-relations/step-two-describe-relations";
+import { StepThreeViewResults } from "./-components/step-three-view-results/step-three-view-results";
 
 export const Route = createFileRoute("/generate-tests/")({
   component: Index,
@@ -73,60 +59,19 @@ function Index() {
     switch (currentStep) {
       case 0:
         return (
-          <Stack gap="lg">
-            <Box ta="center">
-              <Title order={1} size="h2" mb="md">
-                Welcome to Handoff
-              </Title>
-              <Text c="dimmed" size="lg">
-                Upload your code files to generate natural language test cases
-              </Text>
-            </Box>
-
-            <FileDropzone
-              files={files}
-              rejectedFiles={rejectedFiles}
-              onDrop={handleDrop}
-              onReject={handleReject}
-              onDelete={handleDelete}
-              onDeleteRejected={handleDeleteRejected}
-            />
-          </Stack>
+          <StepOneUploadFiles
+            files={files}
+            rejectedFiles={rejectedFiles}
+            onDrop={handleDrop}
+            onReject={handleReject}
+            onDelete={handleDelete}
+            onDeleteRejected={handleDeleteRejected}
+          />
         );
       case 1:
-        return (
-          <Stack gap="lg">
-            <Box ta="center">
-              <Title order={2} mb="md">
-                Generate Tests
-              </Title>
-              <Text c="dimmed" size="lg">
-                Processing your files to generate test cases...
-              </Text>
-            </Box>
-            {/* This will be implemented later */}
-            <Text ta="center" c="blue">
-              Coming soon: Test generation in progress
-            </Text>
-          </Stack>
-        );
+        return <StepTwoDescribeRelations files={files} />;
       case 2:
-        return (
-          <Stack gap="lg">
-            <Box ta="center">
-              <Title order={2} mb="md">
-                Review Results
-              </Title>
-              <Text c="dimmed" size="lg">
-                Review and download your generated test cases
-              </Text>
-            </Box>
-            {/* This will be implemented later */}
-            <Text ta="center" c="green">
-              Coming soon: Generated test results
-            </Text>
-          </Stack>
-        );
+        return <StepThreeViewResults />;
       default:
         return null;
     }
@@ -146,7 +91,7 @@ function Index() {
             <Box>
               <Stepper active={currentStep} size="sm">
                 {stepTitles.map((title, index) => (
-                  <Stepper.Step key={index} label={title} />
+                  <Stepper.Step key={index} label={title} data-qa={`step`} />
                 ))}
               </Stepper>
             </Box>
@@ -155,39 +100,14 @@ function Index() {
             <Box>{renderStepContent()}</Box>
 
             {/* Navigation */}
-            <Group justify="space-between">
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                disabled={currentStep === 0}
-                data-qa="previous-button"
-                leftSection={<IconChevronLeft size={16} />}
-              >
-                Previous
-              </Button>
-
-              <Tooltip
-                label={getNextButtonTooltip()}
-                disabled={canProceedToNext && currentStep !== totalSteps - 1}
-                position="top"
-                data-qa="next-button-tooltip"
-              >
-                <Button
-                  onClick={handleNext}
-                  data-qa="next-button"
-                  disabled={!canProceedToNext || currentStep === totalSteps - 1}
-                  rightSection={
-                    currentStep === totalSteps - 1 ? (
-                      <IconCheck size={16} />
-                    ) : (
-                      <IconChevronRight size={16} />
-                    )
-                  }
-                >
-                  {currentStep === totalSteps - 1 ? "Finish" : "Next"}
-                </Button>
-              </Tooltip>
-            </Group>
+            <StepperNavigationButtons
+              currentStep={currentStep}
+              totalSteps={totalSteps}
+              onNext={handleNext}
+              onPrevious={handlePrevious}
+              canProceedToNext={canProceedToNext}
+              nextButtonTooltip={getNextButtonTooltip()}
+            />
           </Stack>
         </Paper>
       </Center>

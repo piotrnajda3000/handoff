@@ -24,6 +24,11 @@ export function useDropzone() {
     console.log("File deleted at index:", index);
   };
 
+  const handleUpdate = (files: FileWithPath[]) => {
+    setFiles(files);
+    console.log("Files updated:", files);
+  };
+
   const handleDeleteRejected = (index: number) => {
     setRejectedFiles((currentRejected) => {
       const newRejected = [...currentRejected];
@@ -40,5 +45,6 @@ export function useDropzone() {
     handleReject,
     handleDelete,
     handleDeleteRejected,
+    handleUpdate,
   };
 }
