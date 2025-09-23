@@ -12,7 +12,7 @@ import {
   ActionIcon,
   Space,
 } from "@mantine/core";
-import { IconPlus, IconTrash } from "@tabler/icons-react";
+import { IconPlus, IconSparkles, IconTrash } from "@tabler/icons-react";
 import type { FileWithPath } from "@mantine/dropzone";
 import { InteractiveCanvas } from "../interactive-canvas/interactive-canvas";
 import type { Dependency } from "../../../../hooks/use-dependencies";
@@ -29,6 +29,7 @@ interface DependenciesData {
     value: string
   ) => void;
   removeDependency: (id: string) => void;
+  generateDependencies: () => void;
 }
 
 interface StepTwoDescribeRelationsProps {
@@ -49,6 +50,7 @@ export function StepTwoDescribeRelations({
     addDependency,
     updateDependency,
     removeDependency,
+    generateDependencies,
   } = dependenciesData;
 
   return (
@@ -80,20 +82,29 @@ export function StepTwoDescribeRelations({
                 <Text size="lg" fw={500}>
                   Dependencies
                 </Text>
-                <Button
-                  leftSection={<IconPlus size={16} />}
-                  onClick={addDependency}
-                  variant="light"
-                >
-                  Add Dependency
-                </Button>
+                <Group gap="xs">
+                  <Button
+                    leftSection={<IconSparkles size={16} />}
+                    onClick={generateDependencies}
+                    variant="light"
+                  >
+                    Generate
+                  </Button>
+                  <Button
+                    leftSection={<IconPlus size={16} />}
+                    onClick={addDependency}
+                    variant="light"
+                  >
+                    Add
+                  </Button>
+                </Group>
               </Group>
 
               {dependencies.length === 0 ? (
                 <Paper p="lg" withBorder>
                   <Text ta="center" c="dimmed">
-                    No dependencies defined yet. Click "Add Dependency" to get
-                    started.
+                    No dependencies defined yet. Click "Generate" or "Add" to
+                    get started.
                   </Text>
                 </Paper>
               ) : (

@@ -1,20 +1,30 @@
 {
-  "name": "server",
+  "name": "handoff-server",
   "version": "1.0.0",
   "main": "src/server.ts",
   "type": "module",
   "license": "MIT",
+  "exports": {
+    "./schemas": "./src/shared/schemas.ts"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts"
   },
   "dependencies": {
+    "@fastify/type-provider-typebox": "^6.0.0",
     "@langchain/core": "^1.0.0-alpha.5",
+    "@langchain/google-genai": "^0.2.18",
     "@langchain/langgraph": "^1.0.0-alpha.3",
     "@langchain/openai": "^0.6.13",
+    "@sinclair/typebox": "^0.34.41",
+    "@types/common-tags": "^1.8.4",
+    "common-tags": "^1.8.2",
     "dotenv": "^17.2.2",
     "fastify": "^5.6.0",
+    "fastify-type-provider-zod": "^6.0.0",
     "langchain": "^1.0.0-alpha.6",
+    "strip-indent": "^4.1.0",
     "zod": "^4.1.9"
   },
   "devDependencies": {

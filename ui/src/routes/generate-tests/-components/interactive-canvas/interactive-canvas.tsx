@@ -4,25 +4,27 @@ import { Box } from "@mantine/core";
 import type { FileWithPath } from "@mantine/dropzone";
 import * as d3 from "d3";
 
-// Point interface for coordinates
+// ## 1. Type Definitions and Interfaces
+// ### 1.1. Point interface for coordinates
 export interface Point {
   x: number;
   y: number;
 }
 
-// Node position interface (SVG coordinate space)
+// ### 1.2. Node position interface (SVG coordinate space)
 export interface NodePosition {
   x: number;
   y: number;
 }
 
+// ### 1.3. File node data interface
 interface FileNodeData {
   id: string;
   name: string;
   position: NodePosition;
 }
 
-// Edge interface for connections between nodes
+// ### 1.4. Edge interface for connections between nodes
 export interface Edge {
   id: string;
   from: string;
@@ -30,7 +32,7 @@ export interface Edge {
   description: string;
 }
 
-// Canvas state interface
+// ### 1.5. Canvas state interface
 export interface CanvasState {
   zoom: number;
   pan: Point;
@@ -41,32 +43,32 @@ export interface CanvasState {
   dragStartPoint: Point | null;
 }
 
+// ### 1.6. Interactive canvas component props
 interface InteractiveCanvasProps {
   files: FileWithPath[];
   edges?: Edge[];
 }
 
-// Constants
+// ## 2. Constants and Configuration
 const NODE_WIDTH = 120;
 const NODE_HEIGHT = 60;
 const GRID_SPACING = 180;
 export const MIN_ZOOM = 0.1;
 export const MAX_ZOOM = 3;
 
-// Canvas Action Functions - Pure functions for testability
-// ========================================================
+// ## 3. Canvas Action Functions - Pure functions for testability
 
-/**
- * Pan the canvas view
- */
+// ### 3.1. dragCanvas - Pan the canvas view
 export function dragCanvas(
   state: CanvasState,
   startPoint: Point,
   currentPoint: Point
 ): CanvasState {
+  // #### 3.1.1. Calculate movement delta
   const deltaX = currentPoint.x - startPoint.x;
   const deltaY = currentPoint.y - startPoint.y;
 
+  // #### 3.1.2. Return new state with updated pan position
   return {
     ...state,
     pan: {
@@ -76,23 +78,24 @@ export function dragCanvas(
   };
 }
 
-/**
- * Zoom in/out at a specific point
- */
+// ### 3.2. zoom - Zoom in/out at a specific point
 export function zoom(
   state: CanvasState,
   zoomPoint: Point,
   zoomDelta: number
 ): CanvasState {
+  // #### 3.2.1. Calculate new zoom level within bounds
   const newZoom = Math.max(
     MIN_ZOOM,
     Math.min(MAX_ZOOM, state.zoom * (1 + zoomDelta))
   );
 
+  // #### 3.2.2. Early return if zoom didn't change
   if (newZoom === state.zoom) {
     return state;
   }
 
+  // #### 3.2.3. Calculate zoom ratio and adjust pan to zoom at point
   const zoomRatio = newZoom / state.zoom;
 
   return {
@@ -105,9 +108,7 @@ export function zoom(
   };
 }
 
-/**
- * Move a specific node
- */
+// ### 3.3. dragNode - Move a specific node
 export function dragNode(
   nodePositions: Record<string, NodePosition>,
   nodeId: string,
@@ -116,14 +117,15 @@ export function dragNode(
   canvasZoom: number,
   initialNodePosition: NodePosition
 ): Record<string, NodePosition> {
-  // Calculate delta in screen space
+  // #### 3.3.1. Calculate delta in screen space
   const screenDeltaX = currentPoint.x - startPoint.x;
   const screenDeltaY = currentPoint.y - startPoint.y;
 
-  // Convert to SVG space
+  // #### 3.3.2. Convert to SVG space (account for zoom)
   const svgDeltaX = screenDeltaX / canvasZoom;
   const svgDeltaY = screenDeltaY / canvasZoom;
 
+  // #### 3.3.3. Return new node positions with updated node
   return {
     ...nodePositions,
     [nodeId]: {
@@ -133,9 +135,7 @@ export function dragNode(
   };
 }
 
-/**
- * Handle node selection/interaction
- */
+// ### 3.4. clickNode - Handle node selection/interaction
 export function clickNode(state: CanvasState, nodeId: string): CanvasState {
   return {
     ...state,
@@ -143,11 +143,13 @@ export function clickNode(state: CanvasState, nodeId: string): CanvasState {
   };
 }
 
+// ## 4. InteractiveCanvas Component
 export function InteractiveCanvas({
   files,
   edges = [],
 }: InteractiveCanvasProps) {
-  // Canvas state
+  // ### 4.1. State Management
+  // #### 4.1.1. Canvas state (zoom, pan, selection, dragging)
   const [canvasState, setCanvasState] = useState<CanvasState>({
     zoom: 1,
     pan: { x: 0, y: 0 },
@@ -158,12 +160,12 @@ export function InteractiveCanvas({
     dragStartPoint: null,
   });
 
-  // Node positions state
+  // #### 4.1.2. Node positions state
   const [nodePositions, setNodePositions] = useState<
     Record<string, NodePosition>
   >({});
 
-  // Refs for D3 operations
+  // ### 4.2. References for D3 Operations
   const containerRef = useRef<HTMLDivElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const gRef = useRef<SVGGElement>(null);
@@ -173,11 +175,11 @@ export function InteractiveCanvas({
   > | null>(null);
   const initialNodePositionRef = useRef<NodePosition>({ x: 0, y: 0 });
 
-  // Refs to store current state for drag callbacks
+  // #### 4.2.1. State refs for drag callbacks (to avoid stale closures)
   const canvasStateRef = useRef(canvasState);
   const nodePositionsRef = useRef(nodePositions);
 
-  // Keep refs in sync with state
+  // ### 4.3. Sync Effects - Keep refs in sync with state
   useEffect(() => {
     canvasStateRef.current = canvasState;
   }, [canvasState]);
@@ -186,7 +188,8 @@ export function InteractiveCanvas({
     nodePositionsRef.current = nodePositions;
   }, [nodePositions]);
 
-  // Generate file nodes data
+  // ### 4.4. Computed Data
+  // #### 4.4.1. Generate file nodes data with positions
   const fileNodes = useMemo((): FileNodeData[] => {
     return files.map((file, index) => ({
       id: `file-${index}`,
@@ -197,7 +200,8 @@ export function InteractiveCanvas({
     }));
   }, [files, nodePositions]);
 
-  // Calculate initial grid position for nodes
+  // ### 4.5. Helper Functions
+  // #### 4.5.1. Calculate initial grid position for nodes
   function calculateInitialPosition(
     index: number,
     totalFiles: number
@@ -212,7 +216,8 @@ export function InteractiveCanvas({
     };
   }
 
-  // Initialize node positions when files change
+  // ### 4.6. Initialization Effects
+  // #### 4.6.1. Initialize node positions when files change
   useEffect(() => {
     const initialPositions: Record<string, NodePosition> = {};
     files.forEach((_, index) => {
@@ -230,17 +235,17 @@ export function InteractiveCanvas({
     }
   }, [files, nodePositions]);
 
-  // D3 Setup Effects
-  // Initialize SVG and setup D3 behaviors (only once)
+  // ### 4.7. D3 Setup Effects
+  // #### 4.7.1. Initialize SVG and setup D3 behaviors (only once)
   useEffect(() => {
     if (!containerRef.current) return;
 
     const container = d3.select(containerRef.current);
 
-    // Clear any existing content
+    // ##### 4.7.1.1. Clear any existing content
     container.selectAll("*").remove();
 
-    // Create SVG
+    // ##### 4.7.1.2. Create SVG element
     const svg = container
       .append("svg")
       .attr("width", "100%")
@@ -249,11 +254,11 @@ export function InteractiveCanvas({
 
     svgRef.current = svg.node();
 
-    // Create main group for zoom/pan transforms
+    // ##### 4.7.1.3. Create main group for zoom/pan transforms
     const g = svg.append("g");
     gRef.current = g.node();
 
-    // Setup grid pattern
+    // ##### 4.7.1.4. Setup grid pattern for visual grid background
     const defs = svg.append("defs");
     const pattern = defs
       .append("pattern")
@@ -270,7 +275,7 @@ export function InteractiveCanvas({
       .attr("stroke-width", 0.5)
       .attr("opacity", 0.5);
 
-    // Add grid background
+    // ##### 4.7.1.5. Add grid background rectangle
     g.append("rect")
       .attr("x", -2000)
       .attr("y", -2000)
@@ -278,7 +283,7 @@ export function InteractiveCanvas({
       .attr("height", 4000)
       .attr("fill", "url(#grid)");
 
-    // Add arrow marker definition for edges
+    // ##### 4.7.1.6. Add arrow marker definition for edges
     const arrowMarker = defs
       .append("marker")
       .attr("id", "arrow")
@@ -294,14 +299,14 @@ export function InteractiveCanvas({
       .attr("d", "M0,-5L10,0L0,5")
       .attr("fill", "var(--mantine-color-gray-6)");
 
-    // Setup zoom behavior - apply to SVG, not container
+    // ##### 4.7.1.7. Setup zoom behavior - apply to SVG, not container
     const zoomBehavior = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([MIN_ZOOM, MAX_ZOOM])
       .on("zoom", (event) => {
         const transform = event.transform;
 
-        // Update canvas state
+        // Update canvas state with new zoom/pan values
         setCanvasState((prev) => ({
           ...prev,
           zoom: transform.k,
@@ -314,17 +319,17 @@ export function InteractiveCanvas({
 
     zoomBehaviorRef.current = zoomBehavior;
 
-    // Apply zoom behavior to SVG element for proper event handling
+    // ##### 4.7.1.8. Apply zoom behavior to SVG element for proper event handling
     svg.call(zoomBehaviorRef.current);
 
-    // Sync initial state with D3 zoom
+    // ##### 4.7.1.9. Sync initial state with D3 zoom
     const initialTransform = d3.zoomIdentity
       .translate(canvasState.pan.x, canvasState.pan.y)
       .scale(canvasState.zoom);
 
     svg.call(zoomBehavior.transform, initialTransform);
 
-    // Cleanup function to remove event listeners
+    // ##### 4.7.1.10. Cleanup function to remove event listeners
     return () => {
       if (zoomBehaviorRef.current) {
         svg.on(".zoom", null);
@@ -333,22 +338,23 @@ export function InteractiveCanvas({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Remove dependencies to prevent recreation
 
-  // Helper function to calculate edge connection points
+  // #### 4.5.2. Calculate edge connection points between nodes
   const calculateEdgePoints = (fromPos: NodePosition, toPos: NodePosition) => {
-    // Calculate direction vector
+    // ##### 4.5.2.1. Calculate direction vector between nodes
     const dx = toPos.x - fromPos.x;
     const dy = toPos.y - fromPos.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
+    // ##### 4.5.2.2. Handle case where nodes are at same position
     if (distance === 0) {
       return { x1: fromPos.x, y1: fromPos.y, x2: toPos.x, y2: toPos.y };
     }
 
-    // Normalize direction vector
+    // ##### 4.5.2.3. Normalize direction vector to unit vector
     const unitX = dx / distance;
     const unitY = dy / distance;
 
-    // Calculate connection points at node edges
+    // ##### 4.5.2.4. Calculate connection points at node edges
     // From node: start from edge in direction of target
     const fromRadius = Math.max(NODE_WIDTH, NODE_HEIGHT) / 2;
     const x1 = fromPos.x + unitX * fromRadius;
@@ -362,31 +368,32 @@ export function InteractiveCanvas({
     return { x1, y1, x2, y2 };
   };
 
-  // Render edges with D3
+  // ### 4.8. Rendering Effects
+  // #### 4.8.1. Render edges with D3
   useEffect(() => {
     if (!gRef.current) return;
 
     const g = d3.select(gRef.current);
 
-    // Helper function to get node position by ID
+    // ##### 4.8.1.1. Helper function to get node position by ID
     const getNodePosition = (nodeId: string): NodePosition | null => {
       const node = fileNodes.find((n) => n.id === nodeId);
       return node ? node.position : null;
     };
 
-    // Filter valid edges (both from and to nodes exist)
+    // ##### 4.8.1.2. Filter valid edges (both from and to nodes exist)
     const validEdges = edges.filter((edge) => {
       const fromPos = getNodePosition(edge.from);
       const toPos = getNodePosition(edge.to);
       return fromPos && toPos;
     });
 
-    // Data join for edges
+    // ##### 4.8.1.3. Data join for edges using D3 pattern
     const edgeLines = g
       .selectAll<SVGLineElement, Edge>("line.edge")
       .data(validEdges, (d) => d.id);
 
-    // Enter selection for edges
+    // ##### 4.8.1.4. Enter selection for new edges
     const enterEdges = edgeLines
       .enter()
       .append("line")
@@ -396,10 +403,10 @@ export function InteractiveCanvas({
       .attr("marker-end", "url(#arrow)")
       .attr("opacity", 0.7);
 
-    // Update all edges (enter + existing)
+    // ##### 4.8.1.5. Merge enter and update selections
     const allEdges = enterEdges.merge(edgeLines);
 
-    // Update edge positions with proper node-to-node connections
+    // ##### 4.8.1.6. Update edge positions with proper node-to-node connections
     allEdges.each(function (d) {
       const fromPos = getNodePosition(d.from);
       const toPos = getNodePosition(d.to);
@@ -415,15 +422,15 @@ export function InteractiveCanvas({
       }
     });
 
-    // Remove exit selection
+    // ##### 4.8.1.7. Remove edges that are no longer needed
     edgeLines.exit().remove();
 
-    // Data join for edge labels
+    // ##### 4.8.1.8. Data join for edge labels
     const edgeLabels = g
       .selectAll<SVGTextElement, Edge>("text.edge-label")
       .data(validEdges, (d) => d.id);
 
-    // Enter selection for edge labels
+    // ##### 4.8.1.9. Enter selection for new edge labels
     const enterLabels = edgeLabels
       .enter()
       .append("text")
@@ -436,10 +443,10 @@ export function InteractiveCanvas({
       .style("background", "white")
       .style("pointer-events", "none");
 
-    // Update all edge labels (enter + existing)
+    // ##### 4.8.1.10. Merge enter and update selections for labels
     const allLabels = enterLabels.merge(edgeLabels);
 
-    // Update edge label positions and text - position above the line
+    // ##### 4.8.1.11. Update edge label positions and text - position above the line
     allLabels.each(function (d) {
       const fromPos = getNodePosition(d.from);
       const toPos = getNodePosition(d.to);
@@ -471,17 +478,17 @@ export function InteractiveCanvas({
       }
     });
 
-    // Remove exit selection for labels
+    // ##### 4.8.1.12. Remove labels that are no longer needed
     edgeLabels.exit().remove();
   }, [edges, fileNodes, nodePositions]);
 
-  // Render nodes with D3
+  // #### 4.8.2. Render nodes with D3
   useEffect(() => {
     if (!gRef.current) return;
 
     const g = d3.select(gRef.current);
 
-    // Setup drag behavior for nodes
+    // ##### 4.8.2.1. Setup drag behavior for nodes
     const dragBehavior = d3
       .drag<SVGGElement, FileNodeData>()
       .on("start", (event, d) => {
@@ -491,7 +498,7 @@ export function InteractiveCanvas({
         // Store initial position for the pure function
         initialNodePositionRef.current = d.position;
 
-        // Store drag start point
+        // Store drag start point in screen coordinates
         const startPoint = {
           x: event.sourceEvent.clientX,
           y: event.sourceEvent.clientY,
@@ -508,16 +515,19 @@ export function InteractiveCanvas({
       .on("drag", (event, d) => {
         event.sourceEvent.stopPropagation();
 
+        // Get current state from refs to avoid stale closures
         const currentCanvasState = canvasStateRef.current;
         const currentNodePositions = nodePositionsRef.current;
 
         if (!currentCanvasState.dragStartPoint) return;
 
+        // Get current mouse position in screen coordinates
         const currentPoint: Point = {
           x: event.sourceEvent.clientX,
           y: event.sourceEvent.clientY,
         };
 
+        // Use pure function to calculate new node positions
         const newNodePositions = dragNode(
           currentNodePositions,
           d.id,
@@ -535,7 +545,7 @@ export function InteractiveCanvas({
         const currentCanvasState = canvasStateRef.current;
 
         if (!currentCanvasState.dragStartPoint) {
-          // Just reset state if no drag start point
+          // Reset state if no drag start point (error case)
           setCanvasState((prev) => ({
             ...prev,
             isDragging: false,
@@ -546,17 +556,19 @@ export function InteractiveCanvas({
           return;
         }
 
+        // Get end position in screen coordinates
         const endPoint: Point = {
           x: event.sourceEvent.clientX,
           y: event.sourceEvent.clientY,
         };
 
-        // Check if this was a click vs drag
+        // Check if this was a click vs drag (movement threshold)
         const isClick =
           Math.abs(endPoint.x - currentCanvasState.dragStartPoint.x) < 5 &&
           Math.abs(endPoint.y - currentCanvasState.dragStartPoint.y) < 5;
 
         if (isClick) {
+          // Handle click - toggle node selection
           const newCanvasState = clickNode(currentCanvasState, d.id);
           setCanvasState({
             ...newCanvasState,
@@ -566,6 +578,7 @@ export function InteractiveCanvas({
             dragStartPoint: null,
           });
         } else {
+          // Handle drag end - just reset drag state
           setCanvasState((prev) => ({
             ...prev,
             isDragging: false,
@@ -576,12 +589,12 @@ export function InteractiveCanvas({
         }
       });
 
-    // Data join for nodes
+    // ##### 4.8.2.2. Data join for nodes using D3 pattern
     const nodeGroups = g
       .selectAll<SVGGElement, FileNodeData>("g.file-node")
       .data(fileNodes, (d) => d.id);
 
-    // Enter selection
+    // ##### 4.8.2.3. Enter selection for new nodes
     const enterGroups = nodeGroups
       .enter()
       .append("g")
@@ -589,7 +602,7 @@ export function InteractiveCanvas({
       .style("cursor", "move")
       .call(dragBehavior);
 
-    // Add rectangle to enter selection
+    // ##### 4.8.2.4. Add rectangle shape to new node groups
     enterGroups
       .append("rect")
       .attr("width", NODE_WIDTH)
@@ -598,7 +611,7 @@ export function InteractiveCanvas({
       .attr("x", -NODE_WIDTH / 2)
       .attr("y", -NODE_HEIGHT / 2);
 
-    // Add text to enter selection
+    // ##### 4.8.2.5. Add text labels to new node groups
     enterGroups
       .append("text")
       .attr("text-anchor", "middle")
@@ -611,16 +624,16 @@ export function InteractiveCanvas({
         d.name.length > 15 ? `${d.name.substring(0, 12)}...` : d.name
       );
 
-    // Update all groups (enter + existing)
+    // ##### 4.8.2.6. Merge enter and update selections
     const allGroups = enterGroups.merge(nodeGroups);
 
-    // Update positions
+    // ##### 4.8.2.7. Update node positions
     allGroups.attr(
       "transform",
       (d) => `translate(${d.position.x}, ${d.position.y})`
     );
 
-    // Update visual states
+    // ##### 4.8.2.8. Update visual states based on selection and drag
     allGroups
       .select("rect")
       .attr("fill", (d) => {
@@ -642,9 +655,10 @@ export function InteractiveCanvas({
         return 1;
       });
 
+    // ##### 4.8.2.9. Update text color
     allGroups.select("text").attr("fill", "var(--mantine-color-blue-9)");
 
-    // Setup hover effects
+    // ##### 4.8.2.10. Setup hover effects for interactive feedback
     allGroups
       .on("mouseenter", function (_event, d) {
         if (canvasState.draggedNodeId !== d.id) {
@@ -669,10 +683,11 @@ export function InteractiveCanvas({
         }
       });
 
-    // Remove exit selection
+    // ##### 4.8.2.11. Remove nodes that are no longer needed
     nodeGroups.exit().remove();
   }, [fileNodes, canvasState, nodePositions]);
 
+  // ### 4.9. Component Render - Container for D3 SVG canvas
   return (
     <Box
       ref={containerRef}
@@ -682,6 +697,7 @@ export function InteractiveCanvas({
         border: "1px solid var(--mantine-color-gray-3)",
         borderRadius: "var(--mantine-radius-md)",
         overflow: "hidden",
+        // Dynamic cursor based on interaction state
         cursor: canvasState.isDragging
           ? canvasState.dragType === "canvas"
             ? "grabbing"

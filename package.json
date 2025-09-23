@@ -1,4 +1,10 @@
 {
+  "name": "handoff",
+  "private": true,
+  "workspaces": [
+    "ui",
+    "server"
+  ],
   "devDependencies": {
     "@types/node": "^24.5.2",
     "cypress": "^15.2.0"
