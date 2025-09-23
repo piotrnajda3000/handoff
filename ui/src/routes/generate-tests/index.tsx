@@ -100,15 +100,10 @@ function Index() {
   };
 
   return (
-    <Container size="md" style={{ height: "100vh" }}>
-      <Center style={{ height: "100%" }}>
-        <Paper
-          shadow="lg"
-          radius="md"
-          p="xl"
-          style={{ width: "100%", maxWidth: 700 }}
-        >
-          <Stack gap="xl">
+    <Container size="md" className="h-[100vh]">
+      <Center className="h-full">
+        <Paper className="w-full max-w-[700px] h-full shadow-lg rounded-md p-xl">
+          <Stack className="gap-xl">
             {/* Step Progress Indicator */}
             <Box>
               <Stepper active={currentStep} size="sm">

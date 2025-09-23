@@ -26,8 +26,8 @@ export function useDependencies(files: FileWithPathOrContent[]) {
 
   const connectionOptions = [
     { value: "uses", label: "uses" },
+    { value: "tests", label: "tests" },
     { value: "describes", label: "describes" },
-    { value: "implements", label: "implements" },
   ];
 
   const addDependency = () => {

@@ -23,7 +23,7 @@ export function StepperNavigationButtons({
   nextButtonTooltip = "",
 }: StepperNavigationButtonsProps) {
   return (
-    <Group justify="space-between">
+    <Group className="justify-between">
       <Button
         variant="outline"
         onClick={onPrevious}

@@ -41,22 +41,22 @@ export function ConnectionForm({
   const isFormValid = repoUrl.trim() && accessToken.trim();
 
   return (
-    <Stack gap="lg">
+    <Stack className="gap-lg">
       {/* # 4.2.2 Header Section */}
-      <Box ta="center">
-        <Title order={1} size="h2" mb="md">
+      <Box className="text-center">
+        <Title order={1} size="h2" className="mb-md">
           Welcome to Handoff
         </Title>
-        <Text c="dimmed" size="lg">
+        <Text className="text-gray-600">
           Connect your repository to generate natural language test cases
         </Text>
       </Box>
 
       {/* # 4.2.3 Connection Form */}
-      <Paper withBorder p="xl" radius="md">
-        <Stack gap="md">
+      <Paper className="border-gray-200 rounded-md p-xl">
+        <Stack className="gap-md">
           {/* # 4.2.3.1 Form Header */}
-          <Group gap="xs">
+          <Group className="gap-xs">
             <IconBrandGithub size={24} />
             <Title order={3} size="h4">
               Connect Your Repository
@@ -64,7 +64,7 @@ export function ConnectionForm({
           </Group>
 
           {/* # 4.2.3.2 Form Description */}
-          <Text size="sm" c="dimmed">
+          <Text size="sm" className="text-gray-600">
             Connect to your GitHub repository (including private repos) to
             select and analyze your code files.
           </Text>

@@ -1,7 +1,7 @@
 // # 3. File Tree State Management Hook
 // Custom hook for managing file tree state and operations
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { type RepoFile, type SelectedRepoFile } from "../../../../types/repo";
 import { type TreeNode } from "./tree-item";
 import { buildFileTree, getFirstLevelDirectories } from "./tree-utils";
@@ -38,7 +38,7 @@ export function useFileTree({
   // # 3.3.3 Directory Expansion Functions
 
   // # 3.3.3.1 Toggle Single Directory
-  const toggleDirectoryExpansion = (path: string) => {
+  const toggleDirectoryExpansion = useCallback((path: string) => {
     setExpandedDirectories((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(path)) {
@@ -48,7 +48,7 @@ export function useFileTree({
       }
       return newSet;
     });
-  };
+  }, []);
 
   // # 3.3.4 Auto-expand Effect
   // Auto-expand first level directories when files are first loaded

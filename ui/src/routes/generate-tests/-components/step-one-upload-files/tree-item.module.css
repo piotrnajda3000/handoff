@@ -1,0 +1,33 @@
+/* # Tree Item Component Styles
+ * CSS Module for TreeItem component to improve performance by avoiding inline styles
+ */
+
+/* # 1. Main Node Container Styles */
+.nodeContainer {
+  cursor: pointer;
+  /* Dynamic margin-left will be set via CSS custom property */
+  margin-left: var(--node-depth-margin, 0px);
+}
+
+.nodeContainer.selected {
+  background-color: var(--mantine-color-blue-0);
+  border-color: var(--mantine-color-blue-3);
+}
+
+/* # 2. Content Group Layout */
+.contentGroup {
+  flex: 1;
+  min-width: 0;
+}
+
+/* # 3. Checkbox Container */
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* # 4. Node Name Container */
+.nodeNameContainer {
+  min-width: 0;
+}

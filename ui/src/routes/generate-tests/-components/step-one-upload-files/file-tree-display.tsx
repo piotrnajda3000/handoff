@@ -1,6 +1,7 @@
 // # 6. File Tree Display Component
 // Handles the display of file tree structure with loading and error states
 
+import React, { useMemo } from "react";
 import {
   Box,
   Text,
@@ -9,6 +10,7 @@ import {
   Button,
   ScrollArea,
   Stack,
+  TextInput,
 } from "@mantine/core";
 import { IconAlertCircle } from "@tabler/icons-react";
 import { type RepoFile, type SelectedRepoFile } from "../../../../types/repo";
@@ -23,14 +25,16 @@ interface FileTreeDisplayProps {
   fileLoadError: string | null;
   loadingFiles: Set<string>;
   expandedDirectories: Set<string>;
+  featureName: string;
   onLoadFiles: () => void;
   onToggleExpanded: (path: string) => void;
   onToggleSelection: (file: RepoFile) => void;
+  onFeatureNameChange: (value: string) => void;
 }
 
 // # 6.2 Main File Tree Display Component
 // Manages different display states and renders the tree structure
-export function FileTreeDisplay({
+export const FileTreeDisplay = React.memo(function FileTreeDisplay({
   repoFiles,
   selectedFiles,
   fileTree,
@@ -38,14 +42,16 @@ export function FileTreeDisplay({
   fileLoadError,
   loadingFiles,
   expandedDirectories,
+  featureName,
   onLoadFiles,
   onToggleExpanded,
   onToggleSelection,
+  onFeatureNameChange,
 }: FileTreeDisplayProps) {
   // # 6.2.1 Render Tree Function
-  // Creates TreeItem components for each root node
-  const renderTree = (nodes: TreeNode[]): React.ReactNode => {
-    return nodes.map((node) => (
+  // Creates TreeItem components for each root node (memoized to prevent recreation)
+  const renderedTree = useMemo(() => {
+    return fileTree.map((node) => (
       <TreeItem
         key={node.path}
         node={node}
@@ -56,14 +62,21 @@ export function FileTreeDisplay({
         onToggleSelection={onToggleSelection}
       />
     ));
-  };
+  }, [
+    fileTree,
+    expandedDirectories,
+    selectedFiles,
+    loadingFiles,
+    onToggleExpanded,
+    onToggleSelection,
+  ]);
 
   return (
     <>
       {/* # 6.2.2 Empty State - No Files Loaded */}
       {!repoFiles.length && !isLoadingFiles && !fileLoadError && (
-        <Box ta="center" py="xl">
-          <Text c="dimmed" size="sm" mb="md">
+        <Box className="py-xl text-center">
+          <Text className="text-gray-600 mb-md" size="sm">
             Click "Load Files" to browse your repository files
           </Text>
           <Button onClick={onLoadFiles} variant="light">
@@ -74,9 +87,9 @@ export function FileTreeDisplay({
 
       {/* # 6.2.3 Loading State */}
       {isLoadingFiles && (
-        <Box ta="center" py="xl">
-          <Loader size="sm" mb="md" />
-          <Text size="sm" c="dimmed">
+        <Box className="py-xl text-center">
+          <Loader size="sm" className="mb-md" />
+          <Text size="sm" className="text-gray-600">
             Loading repository files...
           </Text>
         </Box>
@@ -88,7 +101,7 @@ export function FileTreeDisplay({
           icon={<IconAlertCircle size="1rem" />}
           title="Error Loading Files"
           color="red"
-          mb="md"
+          className="mb-md"
         >
           {fileLoadError}
         </Alert>
@@ -96,19 +109,28 @@ export function FileTreeDisplay({
 
       {/* # 6.2.5 Files Display */}
       {repoFiles.length > 0 && (
-        <Box>
+        <div>
+          {/* # 6.2.5.0 Feature Name Input */}
+          <TextInput
+            label="Feature Name"
+            description="The feature you are doing the handoff for"
+            value={featureName}
+            onChange={(event) => onFeatureNameChange(event.currentTarget.value)}
+            placeholder="Enter feature name..."
+          />
+
           {/* # 6.2.5.1 File Count Summary */}
-          <Text size="sm" c="dimmed" mb="md">
+          <Text size="sm" className="text-gray-600 mb-md">
             {selectedFiles.length} of {repoFiles.length} files selected • Only
             JavaScript/TypeScript files are shown
           </Text>
 
           {/* # 6.2.5.2 Scrollable Tree Container */}
-          <ScrollArea h={400} px="sm">
-            <Stack gap="xs">{renderTree(fileTree)}</Stack>
-          </ScrollArea>
-        </Box>
+          <div className="h-[400px] px-sm overflow-y-auto flex flex-col gap-xs">
+            {renderedTree}
+          </div>
+        </div>
       )}
     </>
   );
-}
+});

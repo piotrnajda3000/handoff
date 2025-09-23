@@ -59,12 +59,12 @@ export function StepTwoDescribeRelations({
   } = dependenciesData;
 
   return (
-    <Stack gap="lg">
-      <Box ta="center">
-        <Title order={2} mb="md">
+    <Stack className="gap-lg">
+      <Box className="text-center">
+        <Title order={2} className="mb-md">
           Configure File Relationships
         </Title>
-        <Text c="dimmed" size="lg">
+        <Text size="lg" className="text-gray-600">
           Describe file relationships or visualize them interactively
         </Text>
       </Box>
@@ -79,12 +79,12 @@ export function StepTwoDescribeRelations({
             <Tabs.Tab value="visualize">Visualize</Tabs.Tab>
           </Tabs.List>
 
-          <Space h="md" />
+          <Space className="h-md" />
 
           <Tabs.Panel value="describe">
-            <Stack gap="md">
-              <Group justify="space-between" align="center">
-                <Text size="lg" fw={500}>
+            <Stack className="gap-md">
+              <Group className="justify-between items-center">
+                <Text size="lg" className="font-medium">
                   Dependencies
                 </Text>
                 <Group gap="xs">
@@ -106,18 +106,21 @@ export function StepTwoDescribeRelations({
               </Group>
 
               {dependencies.length === 0 ? (
-                <Paper p="lg" withBorder>
-                  <Text ta="center" c="dimmed">
+                <Paper className="border-gray-200 rounded-md p-lg">
+                  <Text className="text-center text-gray-600">
                     No dependencies defined yet. Click "Generate" or "Add" to
                     get started.
                   </Text>
                 </Paper>
               ) : (
-                <Stack gap="sm">
+                <Stack className="gap-sm">
                   {dependencies.map((dependency) => (
-                    <Paper key={dependency.id} p="md" withBorder>
-                      <Group justify="space-between" align="flex-end">
-                        <Group flex={1} align="flex-end" wrap="nowrap">
+                    <Paper
+                      key={dependency.id}
+                      className="border-gray-200 rounded-md p-md"
+                    >
+                      <Group className="justify-between flex-end">
+                        <Group className="flex-1 flex-end wrap-nowrap">
                           <Select
                             label="From"
                             placeholder="Select file"
@@ -148,7 +151,7 @@ export function StepTwoDescribeRelations({
                                 value || "uses"
                               )
                             }
-                            style={{ minWidth: 120 }}
+                            className="min-w-[120px]"
                           />
                           <Select
                             label="To"
@@ -158,15 +161,11 @@ export function StepTwoDescribeRelations({
                             onChange={(value) =>
                               updateDependency(dependency.id, "to", value || "")
                             }
-                            style={{ minWidth: 200 }}
+                            className="min-w-[200px]"
                           />
                         </Group>
                         <div className={Select.classes.wrapper}>
-                          <Box
-                            display="flex"
-                            style={{ alignItems: "center" }}
-                            h="var(--input-height)"
-                          >
+                          <Box className="flex items-center h-[var(--input-height)]">
                             <ActionIcon
                               variant="subtle"
                               color="red"
@@ -185,8 +184,8 @@ export function StepTwoDescribeRelations({
           </Tabs.Panel>
 
           <Tabs.Panel value="visualize">
-            <Stack gap="md">
-              <Text size="sm" c="dimmed" ta="center">
+            <Stack className="gap-md">
+              <Text size="sm" className="text-gray-600">
                 Drag nodes to organize them. Use mouse wheel to zoom, click and
                 drag empty space to pan.
               </Text>
@@ -195,7 +194,7 @@ export function StepTwoDescribeRelations({
           </Tabs.Panel>
         </Tabs>
       ) : (
-        <Text ta="center" c="orange">
+        <Text className="text-center text-orange-500">
           No files available. Please go back to step 1 and upload some files.
         </Text>
       )}

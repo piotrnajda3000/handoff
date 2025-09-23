@@ -1,7 +1,8 @@
 // # 7. Main Step One Upload Files Component
 // Orchestrates the file upload and selection process with repository connection
 
-import { Stack, Box, Title, Text } from "@mantine/core";
+import { Title, Text } from "@mantine/core";
+import { useState, useCallback } from "react";
 import { type UseRepoConnectionReturn } from "../../../../hooks/use-repo-connection";
 
 // # 7.1 Extracted Component Imports
@@ -52,30 +53,38 @@ export function StepOneUploadFiles({
       selectedFiles,
     });
 
-  // # 7.3.4 Event Handlers
+  // # 7.3.4 Feature Name State
+  const [featureName, setFeatureName] = useState("");
 
-  // # 7.3.4.1 Connection Handlers
-  const handleConnect = async () => {
+  // # 7.3.5 Event Handlers (Memoized to prevent unnecessary re-renders)
+
+  // # 7.3.5.1 Connection Handlers
+  const handleConnect = useCallback(async () => {
     if (!repoUrl.trim() || !accessToken.trim()) {
       return;
     }
     await connectToRepo(repoUrl.trim(), accessToken.trim());
-  };
+  }, [repoUrl, accessToken, connectToRepo]);
 
-  const handleDisconnect = () => {
+  const handleDisconnect = useCallback(() => {
     disconnect();
     setRepoUrl("");
     setAccessToken("");
-  };
+  }, [disconnect, setRepoUrl, setAccessToken]);
 
-  // # 7.3.4.2 File Management Handlers
-  const handleLoadFiles = () => {
+  // # 7.3.5.2 File Management Handlers
+  const handleLoadFiles = useCallback(() => {
     loadRepoFiles();
-  };
+  }, [loadRepoFiles]);
 
-  // # 7.3.5 Conditional Rendering
+  // # 7.3.5.3 Feature Name Handler
+  const handleFeatureNameChange = useCallback((value: string) => {
+    setFeatureName(value);
+  }, []);
 
-  // # 7.3.5.1 Connection Form State
+  // # 7.3.6 Conditional Rendering
+
+  // # 7.3.6.1 Connection Form State
   if (!isConnected) {
     return (
       <ConnectionForm
@@ -90,21 +99,21 @@ export function StepOneUploadFiles({
     );
   }
 
-  // # 7.3.5.2 Connected State
+  // # 7.3.6.2 Connected State
   return (
-    <Stack gap="lg">
-      {/* # 7.3.5.2.1 Page Header */}
-      <Box ta="center">
-        <Title order={1} size="h2" mb="md">
+    <div className="gap-lg">
+      {/* # 7.3.6.2.1 Page Header */}
+      <div className="text-center">
+        <Title order={1} size="h2" className="mb-md">
           Repository Connected
         </Title>
-        <Text c="dimmed" size="lg">
+        <Text size="lg" className="text-gray-600">
           Select the files you want to analyze from {connection?.owner}/
           {connection?.repo}
         </Text>
-      </Box>
+      </div>
 
-      {/* # 7.3.5.2.2 Repository Management */}
+      {/* # 7.3.6.2.2 Repository Management */}
       <RepositoryHeader
         connection={connection}
         isLoadingFiles={isLoadingFiles}
@@ -112,7 +121,7 @@ export function StepOneUploadFiles({
         onDisconnect={handleDisconnect}
       />
 
-      {/* # 7.3.5.2.3 File Tree Display */}
+      {/* # 7.3.6.2.3 File Tree Display */}
       <FileTreeDisplay
         repoFiles={repoFiles}
         selectedFiles={selectedFiles}
@@ -121,10 +130,12 @@ export function StepOneUploadFiles({
         fileLoadError={fileLoadError}
         loadingFiles={loadingFiles}
         expandedDirectories={expandedDirectories}
+        featureName={featureName}
         onLoadFiles={handleLoadFiles}
         onToggleExpanded={toggleDirectoryExpansion}
         onToggleSelection={toggleFileSelection}
+        onFeatureNameChange={handleFeatureNameChange}
       />
-    </Stack>
+    </div>
   );
 }

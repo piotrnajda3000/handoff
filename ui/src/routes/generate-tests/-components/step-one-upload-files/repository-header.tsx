@@ -22,18 +22,18 @@ export function RepositoryHeader({
   onDisconnect,
 }: RepositoryHeaderProps) {
   return (
-    <Paper withBorder p="md" radius="md">
-      <Group justify="space-between">
+    <Paper className="border-gray-200 rounded-md p-md">
+      <Group className="justify-between">
         {/* # 5.2.1 Connection Status */}
-        <Group gap="xs">
+        <Group className="gap-xs">
           <IconCheck size="1rem" color="green" />
-          <Text size="sm" fw={500}>
+          <Text size="sm" className="font-medium">
             Connected to {connection?.owner}/{connection?.repo}
           </Text>
         </Group>
 
         {/* # 5.2.2 Action Controls */}
-        <Group gap="xs">
+        <Group className="gap-xs">
           {/* # 5.2.2.2 Refresh Control */}
           <Tooltip label="Refresh file list">
             <ActionIcon
