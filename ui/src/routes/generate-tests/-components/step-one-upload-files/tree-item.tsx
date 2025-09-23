@@ -118,7 +118,7 @@ export const TreeItem = React.memo(function TreeItem({
             {isFile ? (
               <div className={`${styles.checkboxContainer} w-5 h-5`}>
                 {isLoading ? (
-                  <Loader size="sm" />
+                  <Loader size="xs" />
                 ) : (
                   <Checkbox
                     checked={isSelected}
@@ -166,7 +166,7 @@ export const TreeItem = React.memo(function TreeItem({
 
       {/* # 1.3.6 Children Container */}
       {!isFile && hasChildren && (
-        <Collapse in={isExpanded}>
+        <Collapse in={isExpanded} transitionDuration={0}>
           <div className="mt-xs gap-xs flex flex-col">
             {node.children.map((child) => (
               <TreeItem
