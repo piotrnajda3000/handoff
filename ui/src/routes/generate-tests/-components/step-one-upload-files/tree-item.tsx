@@ -144,14 +144,14 @@ export const TreeItem = React.memo(function TreeItem({
 
             {/* # 1.3.4.4 Node Name */}
             <div className={styles.nodeNameContainer}>
-              <p
+              <div
                 className={clsx(
                   isFile ? "font-medium" : "text-gray-600",
-                  "text-sm"
+                  "text-sm select-none"
                 )}
               >
                 {node.name}
-              </p>
+              </div>
             </div>
           </div>
 
