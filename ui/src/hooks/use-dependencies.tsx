@@ -1,5 +1,4 @@
 import { useState } from "react";
-import type { FileWithPath } from "@mantine/dropzone";
 import type { Edge } from "../routes/generate-tests/-components/interactive-canvas/interactive-canvas";
 
 export interface Dependency {
@@ -22,7 +21,7 @@ export function useDependencies(files: FileWithPathOrContent[]) {
   // Generate file options for select dropdowns
   const fileOptions = files.map((file) => ({
     value: file.path || file.name,
-    label: file.name,
+    label: file.path || file.name,
   }));
 
   const connectionOptions = [

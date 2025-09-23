@@ -123,6 +123,11 @@ export function StepTwoDescribeRelations({
                             placeholder="Select file"
                             data={fileOptions}
                             value={dependency.from}
+                            comboboxProps={{
+                              width: "max-content",
+                              position: "bottom-start",
+                              middlewares: { flip: false, shift: false },
+                            }}
                             onChange={(value) =>
                               updateDependency(
                                 dependency.id,
