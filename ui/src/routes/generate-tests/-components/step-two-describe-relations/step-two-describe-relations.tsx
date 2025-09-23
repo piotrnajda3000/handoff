@@ -79,7 +79,7 @@ export function StepTwoDescribeRelations({
             <Tabs.Tab value="visualize">Visualize</Tabs.Tab>
           </Tabs.List>
 
-          <Space className="h-md" />
+          <Space h="md" />
 
           <Tabs.Panel value="describe">
             <Stack className="gap-md">

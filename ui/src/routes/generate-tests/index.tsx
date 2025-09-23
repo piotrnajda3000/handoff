@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Container, Paper, Stack, Center, Box, Stepper } from "@mantine/core";
+import { Container, Paper, Center, Box, Stepper } from "@mantine/core";
 import { useDependencies } from "../../hooks/use-dependencies";
 import { useRepoConnection } from "../../hooks/use-repo-connection";
 import { StepperNavigationButtons } from "../../components/stepper-navigation-buttons";
@@ -103,7 +103,7 @@ function Index() {
     <Container size="md" className="h-[100vh]">
       <Center className="h-full">
         <Paper className="w-full max-w-[700px] h-full shadow-lg rounded-md p-xl">
-          <Stack className="gap-xl">
+          <div className="flex flex-col">
             {/* Step Progress Indicator */}
             <Box>
               <Stepper active={currentStep} size="sm">
@@ -114,18 +114,20 @@ function Index() {
             </Box>
 
             {/* Step Content */}
-            <Box>{renderStepContent()}</Box>
+            <div className="mt-xl">{renderStepContent()}</div>
 
             {/* Navigation */}
-            <StepperNavigationButtons
-              currentStep={currentStep}
-              totalSteps={totalSteps}
-              onNext={handleNext}
-              onPrevious={handlePrevious}
-              canProceedToNext={canProceedToNext}
-              nextButtonTooltip={getNextButtonTooltip()}
-            />
-          </Stack>
+            <div className="mt-xl">
+              <StepperNavigationButtons
+                currentStep={currentStep}
+                totalSteps={totalSteps}
+                onNext={handleNext}
+                onPrevious={handlePrevious}
+                canProceedToNext={canProceedToNext}
+                nextButtonTooltip={getNextButtonTooltip()}
+              />
+            </div>
+          </div>
         </Paper>
       </Center>
     </Container>
