@@ -1,12 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Container, Paper, Stack, Center, Box, Stepper } from "@mantine/core";
-import { useDropzone } from "../../components/dropzone/use-dropzone";
 import { useDependencies } from "../../hooks/use-dependencies";
+import { useRepoConnection } from "../../hooks/use-repo-connection";
 import { StepperNavigationButtons } from "../../components/stepper-navigation-buttons";
 import { StepOneUploadFiles } from "./-components/step-one-upload-files/step-one-upload-files";
 import { StepTwoDescribeRelations } from "./-components/step-two-describe-relations/step-two-describe-relations";
 import { StepThreeViewResults } from "./-components/step-three-view-results/step-three-view-results";
+
+// Interface to make SelectedRepoFile compatible with FileWithPath
+interface FileCompatible {
+  path: string;
+  name: string;
+  size: number;
+  text: string;
+}
 
 export const Route = createFileRoute("/generate-tests/")({
   component: Index,
@@ -14,30 +22,37 @@ export const Route = createFileRoute("/generate-tests/")({
 
 function Index() {
   const [currentStep, setCurrentStep] = useState(0);
-  const {
-    files,
-    rejectedFiles,
-    handleDrop,
-    handleReject,
-    handleDelete,
-    handleDeleteRejected,
-  } = useDropzone();
 
-  const dependenciesData = useDependencies(files);
+  const [repoUrl, setRepoUrl] = useState(
+    "https://github.com/piotrnajda3000/handoff.git"
+  );
+  const [accessToken, setAccessToken] = useState(
+    "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"
+  );
 
-  const stepTitles = ["Upload Files", "Generate Tests", "Review Results"];
+  // Repository connection hook - manages selected files internally
+  const repoConnectionData = useRepoConnection();
+  const { selectedFiles } = repoConnectionData;
+
+  // Convert SelectedRepoFile to FileWithPath for existing dependencies hook
+  const fileCompatibleFiles: FileCompatible[] = selectedFiles.map((file) => ({
+    path: file.path,
+    name: file.name,
+    size: file.size,
+    text: file.content, // Add content for compatibility
+  }));
+
+  const dependenciesData = useDependencies(fileCompatibleFiles);
+
+  const stepTitles = ["Connect Repository", "Generate Tests", "Review Results"];
   const totalSteps = stepTitles.length;
 
-  const canProceedToNext =
-    currentStep === 0 ? files.length > 0 && rejectedFiles.length === 0 : true;
+  const canProceedToNext = currentStep === 0 ? selectedFiles.length > 0 : true;
 
   const getNextButtonTooltip = () => {
     if (currentStep === 0) {
-      if (files.length === 0) {
-        return "Please upload files to continue";
-      }
-      if (rejectedFiles.length > 0) {
-        return "Please remove rejected files to continue";
+      if (selectedFiles.length === 0) {
+        return "Please select files from your repository to continue";
       }
     }
     if (currentStep === totalSteps - 1) {
@@ -63,18 +78,17 @@ function Index() {
       case 0:
         return (
           <StepOneUploadFiles
-            files={files}
-            rejectedFiles={rejectedFiles}
-            onDrop={handleDrop}
-            onReject={handleReject}
-            onDelete={handleDelete}
-            onDeleteRejected={handleDeleteRejected}
+            repoConnectionData={repoConnectionData}
+            repoUrl={repoUrl}
+            setRepoUrl={setRepoUrl}
+            accessToken={accessToken}
+            setAccessToken={setAccessToken}
           />
         );
       case 1:
         return (
           <StepTwoDescribeRelations
-            files={files}
+            files={fileCompatibleFiles}
             dependenciesData={dependenciesData}
           />
         );

@@ -2,12 +2,27 @@ import Fastify from "fastify";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { runAnnotateWorkflow } from "./routes/generate-tests/generate-tests.utils.js";
 import {
+  testRepoConnection,
+  listRepoFiles,
+  getRepoFileContent,
+} from "./routes/repo/repo.utils.js";
+import {
   AnnotateRequestSchema,
   AnnotateResponseSchema,
   ErrorResponseSchema,
+  RepoTestConnectionRequestSchema,
+  RepoListFilesRequestSchema,
+  RepoListFilesResponseSchema,
+  RepoGetFileContentRequestSchema,
+  RepoGetFileContentResponseSchema,
   type AnnotateRequest,
   type AnnotateResponse,
   type ErrorResponse,
+  type RepoTestConnectionRequest,
+  type RepoListFilesRequest,
+  type RepoListFilesResponse,
+  type RepoGetFileContentRequest,
+  type RepoGetFileContentResponse,
 } from "./shared/schemas.js";
 
 async function buildApp() {
@@ -76,6 +91,73 @@ async function buildApp() {
     }
   );
 
+  // Repository connection endpoints
+  fastify.post<{
+    Body: RepoTestConnectionRequest;
+    Reply: {};
+    ReplyError: ErrorResponse;
+  }>(
+    "/repo/test-connection",
+    {
+      schema: {
+        body: RepoTestConnectionRequestSchema,
+        response: {
+          200: {},
+          400: ErrorResponseSchema,
+          500: ErrorResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      await testRepoConnection(request.body);
+      return reply.status(200).send({});
+    }
+  );
+
+  fastify.post<{
+    Body: RepoListFilesRequest;
+    Reply: RepoListFilesResponse;
+    ReplyError: ErrorResponse;
+  }>(
+    "/repo/list-files",
+    {
+      schema: {
+        body: RepoListFilesRequestSchema,
+        response: {
+          200: RepoListFilesResponseSchema,
+          400: ErrorResponseSchema,
+          500: ErrorResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const files = await listRepoFiles(request.body);
+      return reply.status(200).send(files);
+    }
+  );
+
+  fastify.post<{
+    Body: RepoGetFileContentRequest;
+    Reply: RepoGetFileContentResponse;
+    ReplyError: ErrorResponse;
+  }>(
+    "/repo/get-file-content",
+    {
+      schema: {
+        body: RepoGetFileContentRequestSchema,
+        response: {
+          200: RepoGetFileContentResponseSchema,
+          400: ErrorResponseSchema,
+          500: ErrorResponseSchema,
+        },
+      },
+    },
+    async (request, reply) => {
+      const content = await getRepoFileContent(request.body);
+      return reply.status(200).send({ content });
+    }
+  );
+
   return fastify;
 }
 
@@ -85,7 +167,7 @@ async function buildApp() {
 const start = async () => {
   try {
     const app = await buildApp();
-    await app.listen({ port: 3000 });
+    await app.listen({ port: 8080 });
   } catch (err) {
     console.error("Error:", err);
     process.exit(1);

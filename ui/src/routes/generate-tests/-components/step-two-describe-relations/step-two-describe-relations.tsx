@@ -13,7 +13,12 @@ import {
   Space,
 } from "@mantine/core";
 import { IconPlus, IconSparkles, IconTrash } from "@tabler/icons-react";
-import type { FileWithPath } from "@mantine/dropzone";
+// Use a more flexible file interface that works with both uploaded and repo files
+interface FileWithPathLike {
+  path?: string;
+  name: string;
+  size?: number;
+}
 import { InteractiveCanvas } from "../interactive-canvas/interactive-canvas";
 import type { Dependency } from "../../../../hooks/use-dependencies";
 
@@ -33,7 +38,7 @@ interface DependenciesData {
 }
 
 interface StepTwoDescribeRelationsProps {
-  files: FileWithPath[];
+  files: FileWithPathLike[];
   dependenciesData: DependenciesData;
 }
 

@@ -26,7 +26,66 @@ export const ErrorResponseSchema = Type.Object({
   error: Type.String({ description: "Error message" }),
 });
 
+// Repository connection schemas
+export const RepoConnectionSchema = Type.Object({
+  provider: Type.Union([
+    Type.Literal("github"),
+    Type.Literal("gitlab"),
+    Type.Literal("bitbucket"),
+  ]),
+  url: Type.String({ description: "Repository URL" }),
+  token: Type.String({ description: "Access token" }),
+  owner: Type.String({ description: "Repository owner" }),
+  repo: Type.String({ description: "Repository name" }),
+});
+
+export const RepoTestConnectionRequestSchema = Type.Object({
+  provider: Type.Union([
+    Type.Literal("github"),
+    Type.Literal("gitlab"),
+    Type.Literal("bitbucket"),
+  ]),
+  owner: Type.String({ description: "Repository owner" }),
+  repo: Type.String({ description: "Repository name" }),
+  token: Type.String({ description: "Access token" }),
+});
+
+export const RepoFileSchema = Type.Object({
+  path: Type.String({ description: "File path" }),
+  name: Type.String({ description: "File name" }),
+  type: Type.Union([Type.Literal("file"), Type.Literal("dir")]),
+  size: Type.Optional(Type.Number({ description: "File size in bytes" })),
+  sha: Type.Optional(Type.String({ description: "Git SHA hash" })),
+});
+
+export const RepoListFilesRequestSchema = RepoConnectionSchema;
+
+export const RepoListFilesResponseSchema = Type.Array(RepoFileSchema);
+
+export const RepoGetFileContentRequestSchema = Type.Object({
+  connection: RepoConnectionSchema,
+  filePath: Type.String({ description: "Path to the file to retrieve" }),
+});
+
+export const RepoGetFileContentResponseSchema = Type.Object({
+  content: Type.String({ description: "Base64 decoded file content" }),
+});
+
 // Inferred TypeScript types from TypeBox schemas
 export type AnnotateRequest = Static<typeof AnnotateRequestSchema>;
 export type AnnotateResponse = Static<typeof AnnotateResponseSchema>;
 export type ErrorResponse = Static<typeof ErrorResponseSchema>;
+
+export type RepoConnection = Static<typeof RepoConnectionSchema>;
+export type RepoTestConnectionRequest = Static<
+  typeof RepoTestConnectionRequestSchema
+>;
+export type RepoFile = Static<typeof RepoFileSchema>;
+export type RepoListFilesRequest = Static<typeof RepoListFilesRequestSchema>;
+export type RepoListFilesResponse = Static<typeof RepoListFilesResponseSchema>;
+export type RepoGetFileContentRequest = Static<
+  typeof RepoGetFileContentRequestSchema
+>;
+export type RepoGetFileContentResponse = Static<
+  typeof RepoGetFileContentResponseSchema
+>;

@@ -1,7 +1,10 @@
 /* eslint-disable react-refresh/only-export-components */
 import { useRef, useState, useMemo, useEffect } from "react";
 import { Box } from "@mantine/core";
-import type { FileWithPath } from "@mantine/dropzone";
+// Make the canvas work with any file-like object that has a name
+interface FileWithName {
+  name: string;
+}
 import * as d3 from "d3";
 
 // ## 1. Type Definitions and Interfaces
@@ -45,7 +48,7 @@ export interface CanvasState {
 
 // ### 1.6. Interactive canvas component props
 interface InteractiveCanvasProps {
-  files: FileWithPath[];
+  files: FileWithName[];
   edges?: Edge[];
 }
 

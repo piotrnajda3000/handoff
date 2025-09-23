@@ -9,7 +9,14 @@ export interface Dependency {
   connection: string;
 }
 
-export function useDependencies(files: FileWithPath[]) {
+// Make the hook more flexible to accept file-like objects
+interface FileWithPathOrContent {
+  path?: string;
+  name: string;
+  size?: number;
+}
+
+export function useDependencies(files: FileWithPathOrContent[]) {
   const [dependencies, setDependencies] = useState<Dependency[]>([]);
 
   // Generate file options for select dropdowns
@@ -75,6 +82,14 @@ export function useDependencies(files: FileWithPath[]) {
 
   const edges = convertDependenciesToEdges();
 
+  const generateDependencies = () => {
+    // For now, this is a placeholder. In a real implementation, this could:
+    // - Use AI to analyze files and suggest dependencies
+    // - Parse imports/exports to find relationships
+    // - Add some basic dependencies based on file structure
+    console.log("Generate dependencies functionality to be implemented");
+  };
+
   return {
     dependencies,
     fileOptions,
@@ -83,5 +98,6 @@ export function useDependencies(files: FileWithPath[]) {
     addDependency,
     updateDependency,
     removeDependency,
+    generateDependencies,
   };
 }

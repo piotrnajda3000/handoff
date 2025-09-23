@@ -107,6 +107,6 @@ export async function runAnnotateWorkflow(
   };
 }
 
-const res = await runAnnotateWorkflow("example.ts", MOCK_EXAMPLE_FILE);
+// const res = await runAnnotateWorkflow("example.ts", MOCK_EXAMPLE_FILE);
 
-console.log(res);
+// console.log(res);
