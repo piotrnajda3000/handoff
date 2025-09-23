@@ -4,11 +4,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { type RepoFile, type SelectedRepoFile } from "../../../../types/repo";
 import { type TreeNode } from "./tree-item";
-import {
-  buildFileTree,
-  collectDirectoryPaths,
-  getFirstLevelDirectories,
-} from "./tree-utils";
+import { buildFileTree, getFirstLevelDirectories } from "./tree-utils";
 
 // # 3.1 Hook Interface
 interface UseFileTreeProps {
@@ -20,8 +16,6 @@ interface UseFileTreeProps {
 interface UseFileTreeReturn {
   fileTree: TreeNode[];
   expandedDirectories: Set<string>;
-  expandAll: () => void;
-  collapseAll: () => void;
   toggleDirectoryExpansion: (path: string) => void;
 }
 
@@ -29,7 +23,6 @@ interface UseFileTreeReturn {
 // Manages tree state, expansion, and provides utility functions
 export function useFileTree({
   repoFiles,
-  selectedFiles,
 }: UseFileTreeProps): UseFileTreeReturn {
   // # 3.3.1 State Management
   const [expandedDirectories, setExpandedDirectories] = useState<Set<string>>(
@@ -57,17 +50,6 @@ export function useFileTree({
     });
   };
 
-  // # 3.3.3.2 Expand All Directories
-  const expandAll = () => {
-    const allDirectoryPaths = collectDirectoryPaths(fileTree);
-    setExpandedDirectories(allDirectoryPaths);
-  };
-
-  // # 3.3.3.3 Collapse All Directories
-  const collapseAll = () => {
-    setExpandedDirectories(new Set());
-  };
-
   // # 3.3.4 Auto-expand Effect
   // Auto-expand first level directories when files are first loaded
   useEffect(() => {
@@ -81,8 +63,6 @@ export function useFileTree({
   return {
     fileTree,
     expandedDirectories,
-    expandAll,
-    collapseAll,
     toggleDirectoryExpansion,
   };
 }

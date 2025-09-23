@@ -38,6 +38,7 @@ export function StepOneUploadFiles({
     isLoadingFiles,
     fileLoadError,
     selectedFiles,
+    loadingFiles,
     connectToRepo,
     disconnect,
     loadRepoFiles,
@@ -45,16 +46,11 @@ export function StepOneUploadFiles({
   } = repoConnectionData;
 
   // # 7.3.3 File Tree Management Hook
-  const {
-    fileTree,
-    expandedDirectories,
-    expandAll,
-    collapseAll,
-    toggleDirectoryExpansion,
-  } = useFileTree({
-    repoFiles,
-    selectedFiles,
-  });
+  const { fileTree, expandedDirectories, toggleDirectoryExpansion } =
+    useFileTree({
+      repoFiles,
+      selectedFiles,
+    });
 
   // # 7.3.4 Event Handlers
 
@@ -112,10 +108,7 @@ export function StepOneUploadFiles({
       <RepositoryHeader
         connection={connection}
         isLoadingFiles={isLoadingFiles}
-        hasFiles={repoFiles.length > 0}
         onRefresh={handleLoadFiles}
-        onExpandAll={expandAll}
-        onCollapseAll={collapseAll}
         onDisconnect={handleDisconnect}
       />
 
@@ -126,6 +119,7 @@ export function StepOneUploadFiles({
         fileTree={fileTree}
         isLoadingFiles={isLoadingFiles}
         fileLoadError={fileLoadError}
+        loadingFiles={loadingFiles}
         expandedDirectories={expandedDirectories}
         onLoadFiles={handleLoadFiles}
         onToggleExpanded={toggleDirectoryExpansion}

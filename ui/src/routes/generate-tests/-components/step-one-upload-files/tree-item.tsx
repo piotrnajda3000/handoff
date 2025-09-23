@@ -10,6 +10,7 @@ import {
   ActionIcon,
   Collapse,
   Stack,
+  Loader,
 } from "@mantine/core";
 import {
   IconFile,
@@ -36,6 +37,7 @@ interface TreeItemProps {
   node: TreeNode;
   expandedDirectories: Set<string>;
   selectedFiles: SelectedRepoFile[];
+  loadingFiles: Set<string>;
   onToggleExpanded: (path: string) => void;
   onToggleSelection: (file: RepoFile) => void;
 }
@@ -46,6 +48,7 @@ export function TreeItem({
   node,
   expandedDirectories,
   selectedFiles,
+  loadingFiles,
   onToggleExpanded,
   onToggleSelection,
 }: TreeItemProps) {
@@ -56,11 +59,12 @@ export function TreeItem({
   const isSelected = node.file
     ? selectedFiles.some((f) => f.path === node.file!.path)
     : false;
+  const isLoading = node.file ? loadingFiles.has(node.file.path) : false;
 
   // # 1.3.2 Click Handler
   // Handles clicks on files (selection) and directories (expand/collapse)
   const handleClick = () => {
-    if (isFile && node.file) {
+    if (isFile && node.file && !isLoading) {
       onToggleSelection(node.file);
     } else if (hasChildren) {
       onToggleExpanded(node.path);
@@ -71,7 +75,7 @@ export function TreeItem({
     <Box>
       {/* # 1.3.3 Node Container */}
       <Paper
-        withBorder={isFile && isSelected}
+        withBorder
         p="xs"
         radius="sm"
         style={{
@@ -83,6 +87,7 @@ export function TreeItem({
           marginLeft: node.depth * 20,
         }}
         onClick={handleClick}
+        shadow="xs"
       >
         <Group gap="xs" justify="space-between">
           {/* # 1.3.4 Left Content Group */}
@@ -108,13 +113,27 @@ export function TreeItem({
               <Box w={22} /> // Spacer for alignment
             )}
 
-            {/* # 1.3.4.2 File Selection Checkbox */}
+            {/* # 1.3.4.2 File Selection Checkbox or Loading Spinner */}
             {isFile ? (
-              <Checkbox
-                checked={isSelected}
-                onChange={() => {}} // Controlled by parent click
-                size="sm"
-              />
+              <Box
+                w={20}
+                h={20}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {isLoading ? (
+                  <Loader size="sm" />
+                ) : (
+                  <Checkbox
+                    checked={isSelected}
+                    onChange={() => {}} // Controlled by parent click
+                    size="sm"
+                  />
+                )}
+              </Box>
             ) : null}
 
             {/* # 1.3.4.3 Node Icon */}
@@ -162,6 +181,7 @@ export function TreeItem({
                 node={child}
                 expandedDirectories={expandedDirectories}
                 selectedFiles={selectedFiles}
+                loadingFiles={loadingFiles}
                 onToggleExpanded={onToggleExpanded}
                 onToggleSelection={onToggleSelection}
               />

@@ -21,6 +21,9 @@ export interface UseRepoConnectionReturn {
   // Selected files state
   selectedFiles: SelectedRepoFile[];
 
+  // File content loading state
+  loadingFiles: Set<string>;
+
   // Actions
   connectToRepo: (repoUrl: string, token: string) => Promise<void>;
   disconnect: () => void;
@@ -39,6 +42,7 @@ export function useRepoConnection(): UseRepoConnectionReturn {
   const [fileLoadError, setFileLoadError] = useState<string | null>(null);
 
   const [selectedFiles, setSelectedFiles] = useState<SelectedRepoFile[]>([]);
+  const [loadingFiles, setLoadingFiles] = useState<Set<string>>(new Set());
 
   const parseRepoUrl = (url: string) => {
     // Support both HTTPS and SSH GitHub URLs
@@ -109,6 +113,7 @@ export function useRepoConnection(): UseRepoConnectionReturn {
     setConnection(null);
     setRepoFiles([]);
     setSelectedFiles([]);
+    setLoadingFiles(new Set());
     setConnectionError(null);
     setFileLoadError(null);
   }, []);
@@ -160,6 +165,9 @@ export function useRepoConnection(): UseRepoConnectionReturn {
         setSelectedFiles((prev) => prev.filter((f) => f.path !== file.path));
       } else {
         // Add to selection - need to fetch file content
+        // Set loading state for this file
+        setLoadingFiles((prev) => new Set([...prev, file.path]));
+
         try {
           const response = await apiPost<
             { connection: RepoConnection; filePath: string },
@@ -180,6 +188,13 @@ export function useRepoConnection(): UseRepoConnectionReturn {
           console.log("Added file to selection:", file.path);
         } catch (error) {
           console.error("Failed to fetch file content:", error);
+        } finally {
+          // Remove loading state for this file
+          setLoadingFiles((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(file.path);
+            return newSet;
+          });
         }
       }
     },
@@ -204,6 +219,9 @@ export function useRepoConnection(): UseRepoConnectionReturn {
 
     // Selected files state
     selectedFiles,
+
+    // File content loading state
+    loadingFiles,
 
     // Actions
     connectToRepo,

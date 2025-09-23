@@ -21,6 +21,7 @@ interface FileTreeDisplayProps {
   fileTree: TreeNode[];
   isLoadingFiles: boolean;
   fileLoadError: string | null;
+  loadingFiles: Set<string>;
   expandedDirectories: Set<string>;
   onLoadFiles: () => void;
   onToggleExpanded: (path: string) => void;
@@ -35,6 +36,7 @@ export function FileTreeDisplay({
   fileTree,
   isLoadingFiles,
   fileLoadError,
+  loadingFiles,
   expandedDirectories,
   onLoadFiles,
   onToggleExpanded,
@@ -49,6 +51,7 @@ export function FileTreeDisplay({
         node={node}
         expandedDirectories={expandedDirectories}
         selectedFiles={selectedFiles}
+        loadingFiles={loadingFiles}
         onToggleExpanded={onToggleExpanded}
         onToggleSelection={onToggleSelection}
       />
@@ -101,7 +104,7 @@ export function FileTreeDisplay({
           </Text>
 
           {/* # 6.2.5.2 Scrollable Tree Container */}
-          <ScrollArea h={400}>
+          <ScrollArea h={400} px="sm">
             <Stack gap="xs">{renderTree(fileTree)}</Stack>
           </ScrollArea>
         </Box>

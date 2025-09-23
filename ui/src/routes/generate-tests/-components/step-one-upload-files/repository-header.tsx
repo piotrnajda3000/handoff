@@ -2,23 +2,14 @@
 // Displays connection status and provides repository management controls
 
 import { Paper, Group, Text, Button, ActionIcon, Tooltip } from "@mantine/core";
-import {
-  IconCheck,
-  IconX,
-  IconRefresh,
-  IconFolder,
-  IconFolderOpen,
-} from "@tabler/icons-react";
+import { IconCheck, IconX, IconRefresh } from "@tabler/icons-react";
 import { type RepoConnection } from "../../../../types/repo";
 
 // # 5.1 Component Props Interface
 interface RepositoryHeaderProps {
   connection: RepoConnection | null;
   isLoadingFiles: boolean;
-  hasFiles: boolean;
   onRefresh: () => void;
-  onExpandAll: () => void;
-  onCollapseAll: () => void;
   onDisconnect: () => void;
 }
 
@@ -27,15 +18,12 @@ interface RepositoryHeaderProps {
 export function RepositoryHeader({
   connection,
   isLoadingFiles,
-  hasFiles,
   onRefresh,
-  onExpandAll,
-  onCollapseAll,
   onDisconnect,
 }: RepositoryHeaderProps) {
   return (
     <Paper withBorder p="md" radius="md">
-      <Group justify="space-between" mb="md">
+      <Group justify="space-between">
         {/* # 5.2.1 Connection Status */}
         <Group gap="xs">
           <IconCheck size="1rem" color="green" />
@@ -46,27 +34,6 @@ export function RepositoryHeader({
 
         {/* # 5.2.2 Action Controls */}
         <Group gap="xs">
-          {/* # 5.2.2.1 Tree Expansion Controls */}
-          <Tooltip label="Expand all directories">
-            <ActionIcon
-              variant="light"
-              onClick={onExpandAll}
-              disabled={!hasFiles}
-            >
-              <IconFolderOpen size="1rem" />
-            </ActionIcon>
-          </Tooltip>
-
-          <Tooltip label="Collapse all directories">
-            <ActionIcon
-              variant="light"
-              onClick={onCollapseAll}
-              disabled={!hasFiles}
-            >
-              <IconFolder size="1rem" />
-            </ActionIcon>
-          </Tooltip>
-
           {/* # 5.2.2.2 Refresh Control */}
           <Tooltip label="Refresh file list">
             <ActionIcon
