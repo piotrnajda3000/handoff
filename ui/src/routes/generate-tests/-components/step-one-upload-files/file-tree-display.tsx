@@ -2,16 +2,7 @@
 // Handles the display of file tree structure with loading and error states
 
 import React, { useMemo } from "react";
-import {
-  Box,
-  Text,
-  Loader,
-  Alert,
-  Button,
-  ScrollArea,
-  Stack,
-  TextInput,
-} from "@mantine/core";
+import { Box, Text, Loader, Alert, Button, TextInput } from "@mantine/core";
 import { IconAlertCircle } from "@tabler/icons-react";
 import { type RepoFile, type SelectedRepoFile } from "../../../../types/repo";
 import { TreeItem, type TreeNode } from "./tree-item";
@@ -75,7 +66,7 @@ export const FileTreeDisplay = React.memo(function FileTreeDisplay({
     <>
       {/* # 6.2.2 Empty State - No Files Loaded */}
       {!repoFiles.length && !isLoadingFiles && !fileLoadError && (
-        <Box className="py-xl text-center">
+        <Box className="my-xl text-center">
           <Text className="text-gray-600 mb-md" size="sm">
             Click "Load Files" to browse your repository files
           </Text>
@@ -87,7 +78,7 @@ export const FileTreeDisplay = React.memo(function FileTreeDisplay({
 
       {/* # 6.2.3 Loading State */}
       {isLoadingFiles && (
-        <Box className="py-xl text-center">
+        <Box className="my-xl text-center">
           <Loader size="sm" className="mb-md" />
           <Text size="sm" className="text-gray-600">
             Loading repository files...
@@ -120,13 +111,13 @@ export const FileTreeDisplay = React.memo(function FileTreeDisplay({
           />
 
           {/* # 6.2.5.1 File Count Summary */}
-          <Text size="sm" className="text-gray-600 mb-md">
+          <Text size="sm" className="text-gray-600 mt-md mb-xs text-xs">
             {selectedFiles.length} of {repoFiles.length} files selected • Only
             JavaScript/TypeScript files are shown
           </Text>
 
           {/* # 6.2.5.2 Scrollable Tree Container */}
-          <div className="h-[400px] px-sm overflow-y-auto flex flex-col gap-xs">
+          <div className="h-[400px] overflow-y-auto flex flex-col gap-xs">
             {renderedTree}
           </div>
         </div>

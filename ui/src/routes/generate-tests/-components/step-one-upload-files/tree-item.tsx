@@ -2,17 +2,7 @@
 // This component renders individual nodes in the file tree structure
 
 import React, { useCallback, useMemo } from "react";
-import {
-  Box,
-  Paper,
-  Group,
-  Text,
-  Checkbox,
-  ActionIcon,
-  Collapse,
-  Stack,
-  Loader,
-} from "@mantine/core";
+import { Checkbox, ActionIcon, Collapse, Loader } from "@mantine/core";
 import clsx from "clsx";
 import {
   IconFile,
