@@ -8,5 +8,10 @@
   "devDependencies": {
     "@types/node": "^24.5.2",
     "cypress": "^15.2.0"
+  },
+  "scripts": {
+    "lint:ui": "eslint ui/**/*.{ts,tsx} --fix",
+    "lint:server": "eslint server/**/*.{ts} --fix",
+    "lint": "npm run lint:ui && npm run lint:server"
   }
 }

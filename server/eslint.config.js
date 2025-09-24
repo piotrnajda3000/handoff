@@ -1,7 +1,5 @@
 import js from "@eslint/js";
 import globals from "globals";
-import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 import { globalIgnores } from "eslint/config";
 import noRelativeImportPaths from "eslint-plugin-no-relative-import-paths";
@@ -9,14 +7,8 @@ import noRelativeImportPaths from "eslint-plugin-no-relative-import-paths";
 export default tseslint.config([
   globalIgnores(["dist"]),
   {
-    tsconfigRootDir: __dirname,
-    files: ["**/*.{ts,tsx}"],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      reactHooks.configs["recommended-latest"],
-      reactRefresh.configs.vite,
-    ],
+    files: ["**/*.{ts}"],
+    extends: [js.configs.recommended, tseslint.configs.recommended],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -26,13 +18,6 @@ export default tseslint.config([
     },
     rules: {
       "no-relative-import-paths/no-relative-import-paths": "error",
-    },
-  },
-  {
-    // Specific rules for Cypress test files
-    files: ["**/*.cy.{ts,tsx}"],
-    rules: {
-      "@typescript-eslint/no-unused-expressions": "off",
     },
   },
 ]);

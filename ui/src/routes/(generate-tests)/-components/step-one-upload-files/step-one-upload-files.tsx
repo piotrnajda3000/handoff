@@ -2,14 +2,14 @@
 // Orchestrates the file upload and selection process with repository connection
 
 import { Title, Text } from "@mantine/core";
-import { useState, useCallback } from "react";
-import { type UseRepoConnectionReturn } from "../../../../hooks/use-repo-connection";
+import { useCallback } from "react";
+import { type UseRepoConnectionReturn } from "src/hooks/use-repo-connection";
 
 // # 7.1 Extracted Component Imports
-import { ConnectionForm } from "./connection-form";
-import { RepositoryHeader } from "./repository-header";
-import { FileTreeDisplay } from "./file-tree-display";
-import { useFileTree } from "./use-file-tree";
+import { ConnectionForm } from "src/routes/(generate-tests)/-components/step-one-upload-files/connection-form";
+import { RepositoryHeader } from "src/routes/(generate-tests)/-components/step-one-upload-files/repository-header";
+import { FileTreeDisplay } from "src/routes/(generate-tests)/-components/step-one-upload-files/file-tree-display";
+import type { TreeNode } from "./tree-item";
 
 // # 7.2 Component Props Interface
 interface StepOneUploadFilesProps {
@@ -18,6 +18,11 @@ interface StepOneUploadFilesProps {
   setRepoUrl: (repoUrl: string) => void;
   accessToken: string;
   setAccessToken: (accessToken: string) => void;
+  fileTree: TreeNode[];
+  expandedDirectories: Set<string>;
+  featureName: string;
+  setFeatureName: (featureName: string) => void;
+  toggleDirectoryExpansion: (path: string) => void;
 }
 
 // # 7.3 Main Component Implementation
@@ -28,6 +33,11 @@ export function StepOneUploadFiles({
   setRepoUrl,
   accessToken,
   setAccessToken,
+  fileTree,
+  expandedDirectories,
+  featureName,
+  setFeatureName,
+  toggleDirectoryExpansion,
 }: StepOneUploadFilesProps) {
   // # 7.3.2 Repository Connection Data
   const {
@@ -45,16 +55,6 @@ export function StepOneUploadFiles({
     loadRepoFiles,
     toggleFileSelection,
   } = repoConnectionData;
-
-  // # 7.3.3 File Tree Management Hook
-  const { fileTree, expandedDirectories, toggleDirectoryExpansion } =
-    useFileTree({
-      repoFiles,
-      selectedFiles,
-    });
-
-  // # 7.3.4 Feature Name State
-  const [featureName, setFeatureName] = useState("");
 
   // # 7.3.5 Event Handlers (Memoized to prevent unnecessary re-renders)
 

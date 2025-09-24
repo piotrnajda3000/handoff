@@ -3,7 +3,7 @@
 
 import { Paper, Group, Text, Button, ActionIcon, Tooltip } from "@mantine/core";
 import { IconCheck, IconX, IconRefresh } from "@tabler/icons-react";
-import { type RepoConnection } from "../../../../types/repo";
+import type { RepoConnection } from "src/types/repo";
 
 // # 5.1 Component Props Interface
 interface RepositoryHeaderProps {

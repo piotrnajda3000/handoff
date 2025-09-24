@@ -4,7 +4,7 @@
 import React, { useMemo } from "react";
 import { Box, Text, Loader, Alert, Button, TextInput } from "@mantine/core";
 import { IconAlertCircle } from "@tabler/icons-react";
-import { type RepoFile, type SelectedRepoFile } from "../../../../types/repo";
+import { type RepoFile, type SelectedRepoFile } from "src/types/repo";
 import { TreeItem, type TreeNode } from "./tree-item";
 
 // # 6.1 Component Props Interface

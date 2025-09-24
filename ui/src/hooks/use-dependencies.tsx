@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Edge } from "../routes/generate-tests/-components/interactive-canvas/interactive-canvas";
+import type { Edge } from "../routes/(generate-tests)/-components/interactive-canvas/interactive-canvas";
 
 export interface Dependency {
   id: string;

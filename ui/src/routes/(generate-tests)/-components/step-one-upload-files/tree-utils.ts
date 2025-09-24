@@ -1,8 +1,8 @@
 // # 2. Tree Utility Functions
 // Contains helper functions for building and managing file tree structures
 
-import { type RepoFile } from "../../../../types/repo";
-import { type TreeNode } from "./tree-item";
+import type { RepoFile } from "src/types/repo";
+import type { TreeNode } from "./tree-item";
 
 // # 2.1 Build File Tree Function
 // Converts a flat list of RepoFile objects into a hierarchical tree structure

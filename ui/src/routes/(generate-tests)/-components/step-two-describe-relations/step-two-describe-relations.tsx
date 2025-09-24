@@ -19,8 +19,8 @@ interface FileWithPathLike {
   name: string;
   size?: number;
 }
-import { InteractiveCanvas } from "../interactive-canvas/interactive-canvas";
-import type { Dependency } from "../../../../hooks/use-dependencies";
+import { InteractiveCanvas } from "src/routes/(generate-tests)/-components/interactive-canvas/interactive-canvas";
+import type { Dependency } from "src/hooks/use-dependencies";
 
 interface DependenciesData {
   dependencies: Dependency[];

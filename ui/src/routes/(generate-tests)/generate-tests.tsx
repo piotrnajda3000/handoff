@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Container, Paper, Center, Box, Stepper } from "@mantine/core";
-import { useDependencies } from "../../hooks/use-dependencies";
-import { useRepoConnection } from "../../hooks/use-repo-connection";
-import { StepperNavigationButtons } from "../../components/stepper-navigation-buttons";
-import { StepOneUploadFiles } from "./-components/step-one-upload-files/step-one-upload-files";
-import { StepTwoDescribeRelations } from "./-components/step-two-describe-relations/step-two-describe-relations";
-import { StepThreeViewResults } from "./-components/step-three-view-results/step-three-view-results";
+import { useDependencies } from "src/hooks/use-dependencies";
+import { useRepoConnection } from "src/hooks/use-repo-connection";
+import { StepperNavigationButtons } from "src/components/stepper-navigation-buttons";
+import { StepOneUploadFiles } from "src/routes/(generate-tests)/-components/step-one-upload-files/step-one-upload-files";
+import { StepTwoDescribeRelations } from "src/routes/(generate-tests)/-components/step-two-describe-relations/step-two-describe-relations";
+import { StepThreeViewResults } from "src/routes/(generate-tests)/-components/step-three-view-results/step-three-view-results";
+import { useFileTree } from "./-components/step-one-upload-files/use-file-tree";
 
 // Interface to make SelectedRepoFile compatible with FileWithPath
 interface FileCompatible {
@@ -16,7 +17,7 @@ interface FileCompatible {
   text: string;
 }
 
-export const Route = createFileRoute("/generate-tests/")({
+export const Route = createFileRoute("/(generate-tests)/generate-tests")({
   component: Index,
 });
 
@@ -41,6 +42,16 @@ function Index() {
     size: file.size,
     text: file.content, // Add content for compatibility
   }));
+
+  // File Tree Management Hook
+  const { fileTree, expandedDirectories, toggleDirectoryExpansion } =
+    useFileTree({
+      repoFiles: repoConnectionData.repoFiles,
+      selectedFiles,
+    });
+
+  // Feature Name State
+  const [featureName, setFeatureName] = useState("");
 
   const dependenciesData = useDependencies(fileCompatibleFiles);
 
@@ -83,6 +94,11 @@ function Index() {
             setRepoUrl={setRepoUrl}
             accessToken={accessToken}
             setAccessToken={setAccessToken}
+            fileTree={fileTree}
+            expandedDirectories={expandedDirectories}
+            featureName={featureName}
+            setFeatureName={setFeatureName}
+            toggleDirectoryExpansion={toggleDirectoryExpansion}
           />
         );
       case 1:
@@ -100,8 +116,8 @@ function Index() {
   };
 
   return (
-    <Container size="md" className="h-[100vh]">
-      <Center className="h-full">
+    <Container size="md" className="h-full flex flex-col">
+      <Center className="my-auto">
         <Paper className="w-full max-w-[700px] h-full shadow-lg rounded-md p-xl">
           <div className="flex flex-col">
             {/* Step Progress Indicator */}

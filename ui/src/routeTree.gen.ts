@@ -10,43 +10,44 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as GenerateTestsIndexRouteImport } from './routes/generate-tests/index'
+import { Route as generateTestsGenerateTestsRouteImport } from './routes/(generate-tests)/generate-tests'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GenerateTestsIndexRoute = GenerateTestsIndexRouteImport.update({
-  id: '/generate-tests/',
-  path: '/generate-tests/',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const generateTestsGenerateTestsRoute =
+  generateTestsGenerateTestsRouteImport.update({
+    id: '/(generate-tests)/generate-tests',
+    path: '/generate-tests',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/generate-tests': typeof GenerateTestsIndexRoute
+  '/generate-tests': typeof generateTestsGenerateTestsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/generate-tests': typeof GenerateTestsIndexRoute
+  '/generate-tests': typeof generateTestsGenerateTestsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/generate-tests/': typeof GenerateTestsIndexRoute
+  '/(generate-tests)/generate-tests': typeof generateTestsGenerateTestsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths: '/' | '/generate-tests'
   fileRoutesByTo: FileRoutesByTo
   to: '/' | '/generate-tests'
-  id: '__root__' | '/' | '/generate-tests/'
+  id: '__root__' | '/' | '/(generate-tests)/generate-tests'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  GenerateTestsIndexRoute: typeof GenerateTestsIndexRoute
+  generateTestsGenerateTestsRoute: typeof generateTestsGenerateTestsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,11 +59,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/generate-tests/': {
-      id: '/generate-tests/'
+    '/(generate-tests)/generate-tests': {
+      id: '/(generate-tests)/generate-tests'
       path: '/generate-tests'
       fullPath: '/generate-tests'
-      preLoaderRoute: typeof GenerateTestsIndexRouteImport
+      preLoaderRoute: typeof generateTestsGenerateTestsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -70,7 +71,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  GenerateTestsIndexRoute: GenerateTestsIndexRoute,
+  generateTestsGenerateTestsRoute: generateTestsGenerateTestsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

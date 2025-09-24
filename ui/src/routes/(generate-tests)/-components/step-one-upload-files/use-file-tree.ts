@@ -2,9 +2,12 @@
 // Custom hook for managing file tree state and operations
 
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { type RepoFile, type SelectedRepoFile } from "../../../../types/repo";
-import { type TreeNode } from "./tree-item";
-import { buildFileTree, getFirstLevelDirectories } from "./tree-utils";
+import { type RepoFile, type SelectedRepoFile } from "src/types/repo";
+import { type TreeNode } from "src/routes/(generate-tests)/-components/step-one-upload-files/tree-item";
+import {
+  buildFileTree,
+  getFirstLevelDirectories,
+} from "src/routes/(generate-tests)/-components/step-one-upload-files/tree-utils";
 
 // # 3.1 Hook Interface
 interface UseFileTreeProps {

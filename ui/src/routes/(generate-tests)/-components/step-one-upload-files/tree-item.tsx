@@ -11,8 +11,8 @@ import {
   IconChevronRight,
   IconChevronDown,
 } from "@tabler/icons-react";
-import { type RepoFile, type SelectedRepoFile } from "../../../../types/repo";
-import styles from "./tree-item.module.css";
+import { type RepoFile, type SelectedRepoFile } from "src/types/repo";
+import styles from "src/routes/(generate-tests)/-components/step-one-upload-files/tree-item.module.css";
 
 // # 1.1 TreeNode Interface
 // Represents a single node in the file tree structure
