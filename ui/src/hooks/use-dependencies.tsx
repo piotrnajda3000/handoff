@@ -13,6 +13,10 @@ interface FileWithPathOrContent {
   path?: string;
   name: string;
   size?: number;
+  dependents?: {
+    name: string;
+    path: string;
+  }[];
 }
 
 export function useDependencies(files: FileWithPathOrContent[]) {
@@ -82,11 +86,49 @@ export function useDependencies(files: FileWithPathOrContent[]) {
   const edges = convertDependenciesToEdges();
 
   const generateDependencies = () => {
-    // For now, this is a placeholder. In a real implementation, this could:
-    // - Use AI to analyze files and suggest dependencies
-    // - Parse imports/exports to find relationships
-    // - Add some basic dependencies based on file structure
-    console.log("Generate dependencies functionality to be implemented");
+    const generatedDependencies: Dependency[] = [];
+
+    // Iterate through all files and use their dependents array to create dependencies
+    files.forEach((file) => {
+      const fileIdentifier = file.path || file.name;
+
+      console.log(file);
+
+      // If this file has dependents, create dependencies for each one
+      if (file.dependents && file.dependents.length > 0) {
+        file.dependents.forEach((dependent) => {
+          // Create a dependency: dependent file "uses" current file
+          const dependency: Dependency = {
+            id: crypto.randomUUID(),
+            from: dependent.path, // The file that imports this one
+            to: fileIdentifier, // The current file being imported
+            connection: "uses", // Default connection type
+          };
+
+          // Check if this dependency already exists to avoid duplicates
+          const existsInGenerated = generatedDependencies.some(
+            (dep) => dep.from === dependency.from && dep.to === dependency.to
+          );
+          const existsInCurrent = dependencies.some(
+            (dep) => dep.from === dependency.from && dep.to === dependency.to
+          );
+
+          if (!existsInGenerated && !existsInCurrent) {
+            generatedDependencies.push(dependency);
+          }
+        });
+      }
+    });
+
+    // Add the generated dependencies to the existing ones
+    if (generatedDependencies.length > 0) {
+      setDependencies([...dependencies, ...generatedDependencies]);
+      console.log(
+        `Generated ${generatedDependencies.length} dependencies from file relationships`
+      );
+    } else {
+      console.log("No dependencies found in file relationships");
+    }
   };
 
   return {

@@ -54,6 +54,7 @@ export function StepOneUploadFiles({
     disconnect,
     loadRepoFiles,
     toggleFileSelection,
+    selectFileWithDependencies,
   } = repoConnectionData;
 
   // # 7.3.5 Event Handlers (Memoized to prevent unnecessary re-renders)
@@ -134,6 +135,7 @@ export function StepOneUploadFiles({
         onLoadFiles={handleLoadFiles}
         onToggleExpanded={toggleDirectoryExpansion}
         onToggleSelection={toggleFileSelection}
+        onSelectWithDependencies={selectFileWithDependencies}
         onFeatureNameChange={handleFeatureNameChange}
       />
     </div>

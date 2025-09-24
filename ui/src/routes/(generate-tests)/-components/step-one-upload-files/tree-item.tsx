@@ -10,6 +10,7 @@ import {
   IconFolderOpen,
   IconChevronRight,
   IconChevronDown,
+  IconNetworkOff,
 } from "@tabler/icons-react";
 import { type RepoFile, type SelectedRepoFile } from "src/types/repo";
 import styles from "src/routes/(generate-tests)/-components/step-one-upload-files/tree-item.module.css";
@@ -33,6 +34,7 @@ interface TreeItemProps {
   loadingFiles: Set<string>;
   onToggleExpanded: (path: string) => void;
   onToggleSelection: (file: RepoFile) => void;
+  onSelectWithDependencies: (file: RepoFile) => void;
 }
 
 // # 1.3 Main TreeItem Component
@@ -44,6 +46,7 @@ export const TreeItem = React.memo(function TreeItem({
   loadingFiles,
   onToggleExpanded,
   onToggleSelection,
+  onSelectWithDependencies,
 }: TreeItemProps) {
   // # 1.3.1 Node State Calculations
   const hasChildren = node.children.length > 0;
@@ -54,7 +57,7 @@ export const TreeItem = React.memo(function TreeItem({
     : false;
   const isLoading = node.file ? loadingFiles.has(node.file.path) : false;
 
-  // # 1.3.2 Click Handler
+  // # 1.3.2 Click Handlers
   // Handles clicks on files (selection) and directories (expand/collapse)
   const handleClick = useCallback(() => {
     if (isFile && node.file && !isLoading) {
@@ -71,6 +74,17 @@ export const TreeItem = React.memo(function TreeItem({
     onToggleSelection,
     onToggleExpanded,
   ]);
+
+  // Handles "Select with Dependencies" button clicks
+  const handleSelectWithDependencies = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (node.file && !isLoading) {
+        onSelectWithDependencies(node.file);
+      }
+    },
+    [node.file, isLoading, onSelectWithDependencies]
+  );
 
   const paperStyle = useMemo(() => {
     return {
@@ -155,11 +169,28 @@ export const TreeItem = React.memo(function TreeItem({
             </div>
           </div>
 
-          {/* # 1.3.5 Right Content - File Size */}
-          {isFile && node.file?.size && (
-            <p className="text-gray-600 text-xs">
-              {Math.round(node.file.size / 1024)}KB
-            </p>
+          {/* # 1.3.5 Right Content - File Actions */}
+          {isFile && (
+            <div className="flex items-center gap-xs">
+              {/* # 1.3.5.1 Select with Dependencies Button */}
+              <ActionIcon
+                variant="subtle"
+                size="sm"
+                color="blue"
+                onClick={handleSelectWithDependencies}
+                disabled={isLoading}
+                title="Select file with all its dependencies"
+              >
+                <IconNetworkOff size="0.8rem" />
+              </ActionIcon>
+
+              {/* # 1.3.5.2 File Size */}
+              {node.file?.size && (
+                <p className="text-gray-600 text-xs">
+                  {Math.round(node.file.size / 1024)}KB
+                </p>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -177,6 +208,7 @@ export const TreeItem = React.memo(function TreeItem({
                 loadingFiles={loadingFiles}
                 onToggleExpanded={onToggleExpanded}
                 onToggleSelection={onToggleSelection}
+                onSelectWithDependencies={onSelectWithDependencies}
               />
             ))}
           </div>

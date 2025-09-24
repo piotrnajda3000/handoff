@@ -5,7 +5,13 @@ import {
   type SelectedRepoFile,
 } from "../types/repo";
 import { apiPost } from "../utils/api";
-import { getImportedFilesToSelect } from "../utils/import-parser.utils";
+import {
+  extractImportStatements,
+  extractFromPaths,
+  filterRelevantImports,
+  resolveToFullPaths,
+} from "../utils/import-parse.util";
+import { MOCK_SELECTED_FILES } from "src/mocks/files.mock";
 
 export interface UseRepoConnectionReturn {
   // Connection state
@@ -29,11 +35,8 @@ export interface UseRepoConnectionReturn {
   connectToRepo: (repoUrl: string, token: string) => Promise<void>;
   disconnect: () => void;
   loadRepoFiles: () => Promise<void>;
-  toggleFileSelection: (
-    file: RepoFile,
-    autoSelectImports?: boolean
-  ) => Promise<void>;
-  autoSelectImportedFiles: (file: SelectedRepoFile) => Promise<void>;
+  toggleFileSelection: (file: RepoFile) => Promise<void>;
+  selectFileWithDependencies: (file: RepoFile) => Promise<void>;
   clearSelectedFiles: () => void;
 }
 
@@ -46,7 +49,8 @@ export function useRepoConnection(): UseRepoConnectionReturn {
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [fileLoadError, setFileLoadError] = useState<string | null>(null);
 
-  const [selectedFiles, setSelectedFiles] = useState<SelectedRepoFile[]>([]);
+  const [selectedFiles, setSelectedFiles] =
+    useState<SelectedRepoFile[]>(MOCK_SELECTED_FILES);
   const [loadingFiles, setLoadingFiles] = useState<Set<string>>(new Set());
 
   const parseRepoUrl = (url: string) => {
@@ -159,98 +163,8 @@ export function useRepoConnection(): UseRepoConnectionReturn {
     }
   }, [connection]);
 
-  const selectFileWithoutAutoImports = useCallback(
-    async (file: RepoFile) => {
-      if (!connection) return null;
-
-      // Set loading state for this file
-      setLoadingFiles((prev) => new Set([...prev, file.path]));
-
-      try {
-        const response = await apiPost<
-          { connection: RepoConnection; filePath: string },
-          { content: string }
-        >({
-          endpoint: "/repo/get-file-content",
-          body: { connection, filePath: file.path },
-        });
-
-        const selectedFile: SelectedRepoFile = {
-          path: file.path,
-          name: file.name,
-          content: response.content,
-          size: file.size || 0,
-        };
-
-        setSelectedFiles((prev) => [...prev, selectedFile]);
-        console.log("Added file to selection:", file.path);
-        return selectedFile;
-      } catch (error) {
-        console.error("Failed to fetch file content:", error);
-        return null;
-      } finally {
-        // Remove loading state for this file
-        setLoadingFiles((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(file.path);
-          return newSet;
-        });
-      }
-    },
-    [connection]
-  );
-
-  const autoSelectImportedFiles = useCallback(
-    async (file: SelectedRepoFile) => {
-      if (!connection) return;
-
-      try {
-        // Get imported files that should be auto-selected
-        const importedFiles = getImportedFilesToSelect(
-          file.content,
-          file.path,
-          repoFiles
-        );
-
-        console.log({
-          content: file.content,
-          path: file.path,
-          repoFiles: repoFiles,
-        });
-
-        console.log(
-          `Found ${importedFiles.length} imported files for ${file.path}:`,
-          importedFiles.map((f) => f.path)
-        );
-
-        // Filter out files that are already selected
-        const filesToSelect = importedFiles.filter(
-          (importedFile) =>
-            !selectedFiles.some(
-              (selected) => selected.path === importedFile.path
-            )
-        );
-
-        if (filesToSelect.length === 0) {
-          console.log("No new imported files to select");
-          return;
-        }
-
-        console.log(`Auto-selecting ${filesToSelect.length} imported files...`);
-
-        // Select each imported file (without triggering auto-select recursively)
-        for (const importedFile of filesToSelect) {
-          await selectFileWithoutAutoImports(importedFile);
-        }
-      } catch (error) {
-        console.error("Failed to auto-select imported files:", error);
-      }
-    },
-    [connection, repoFiles, selectedFiles, selectFileWithoutAutoImports]
-  );
-
   const toggleFileSelection = useCallback(
-    async (file: RepoFile, autoSelectImports = true) => {
+    async (file: RepoFile) => {
       if (!connection) return;
 
       const isSelected = selectedFiles.some((f) => f.path === file.path);
@@ -260,23 +174,208 @@ export function useRepoConnection(): UseRepoConnectionReturn {
         setSelectedFiles((prev) => prev.filter((f) => f.path !== file.path));
       } else {
         // Add to selection - need to fetch file content
-        const selectedFile = await selectFileWithoutAutoImports(file);
+        // Set loading state for this file
+        setLoadingFiles((prev) => new Set([...prev, file.path]));
 
-        // Auto-select imported files if requested and file was successfully selected
-        if (autoSelectImports && selectedFile) {
-          // Use a small delay to ensure state has updated
-          setTimeout(() => {
-            autoSelectImportedFiles(selectedFile);
-          }, 100);
+        try {
+          const response = await apiPost<
+            { connection: RepoConnection; filePath: string },
+            { content: string }
+          >({
+            endpoint: "/repo/get-file-content",
+            body: { connection, filePath: file.path },
+          });
+
+          const selectedFile: SelectedRepoFile = {
+            path: file.path,
+            name: file.name,
+            content: response.content,
+            size: file.size || 0,
+          };
+
+          setSelectedFiles((prev) => [...prev, selectedFile]);
+          console.log("Added file to selection:", file.path);
+        } catch (error) {
+          console.error("Failed to fetch file content:", error);
+        } finally {
+          // Remove loading state for this file
+          setLoadingFiles((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(file.path);
+            return newSet;
+          });
         }
       }
     },
-    [
-      connection,
-      selectedFiles,
-      selectFileWithoutAutoImports,
-      autoSelectImportedFiles,
-    ]
+    [connection, selectedFiles]
+  );
+
+  const selectFileWithDependencies = useCallback(
+    async (file: RepoFile) => {
+      if (!connection) return;
+
+      // Keep track of files being processed to avoid circular dependencies
+      const processingFiles = new Set<string>();
+      const processedFiles = new Set<string>();
+
+      const processFile = async (
+        targetFile: RepoFile,
+        parentFile?: RepoFile
+      ): Promise<void> => {
+        // Skip if already selected or being processed
+        const isAlreadySelected = selectedFiles.some(
+          (f) => f.path === targetFile.path
+        );
+
+        if (
+          isAlreadySelected ||
+          processingFiles.has(targetFile.path) ||
+          processedFiles.has(targetFile.path)
+        ) {
+          // If file is already selected but we have a new parent, update dependents
+          if (isAlreadySelected && parentFile) {
+            setSelectedFiles((prev) =>
+              prev.map((f) => {
+                if (f.path === targetFile.path) {
+                  const existingDependents = f.dependents || [];
+                  // Check if this parent is already in dependents
+                  const isParentAlreadyDependent = existingDependents.some(
+                    (dep) => dep.path === parentFile.path
+                  );
+
+                  if (!isParentAlreadyDependent) {
+                    return {
+                      ...f,
+                      dependents: [
+                        ...existingDependents,
+                        { name: parentFile.name, path: parentFile.path },
+                      ],
+                    };
+                  }
+                }
+                return f;
+              })
+            );
+          }
+          return;
+        }
+
+        // Mark as processing
+        processingFiles.add(targetFile.path);
+
+        // Set loading state for this file
+        setLoadingFiles((prev) => new Set([...prev, targetFile.path]));
+
+        try {
+          // Fetch file content
+          const response = await apiPost<
+            { connection: RepoConnection; filePath: string },
+            { content: string }
+          >({
+            endpoint: "/repo/get-file-content",
+            body: { connection, filePath: targetFile.path },
+          });
+
+          processedFiles.add(targetFile.path);
+
+          const selectedFile: SelectedRepoFile = {
+            path: targetFile.path,
+            name: targetFile.name,
+            content: response.content,
+            size: targetFile.size || 0,
+            // Initialize dependents array with parent if this file has one
+            dependents: parentFile
+              ? [{ name: parentFile.name, path: parentFile.path }]
+              : [],
+          };
+
+          // Add to selected files
+          setSelectedFiles((prev) => [...prev, selectedFile]);
+          console.log("Added file to selection:", targetFile.path);
+
+          // Parse imports and recursively select dependencies
+          const imports = extractImportStatements(response.content);
+          const fromPaths = extractFromPaths(imports);
+
+          // Create all possible paths from repoFiles for filtering
+          const allRepoPaths = repoFiles.map((f) =>
+            f.path.split("/").slice(0, -1).join("/")
+          );
+
+          // Get the root folder - assume it's the first segment of any file path
+          const rootFolder = targetFile.path.split("/")[0];
+
+          const relevantImports = filterRelevantImports(
+            fromPaths,
+            allRepoPaths,
+            rootFolder
+          );
+
+          const fullImportPaths = resolveToFullPaths(
+            relevantImports,
+            targetFile.path,
+            rootFolder
+          );
+
+          // Find matching files and recursively process them
+          for (const importPath of fullImportPaths) {
+            // Try to find the file with exact path match first
+            let matchingFile = repoFiles.find((f) => f.path === importPath);
+
+            // If not found, try with common extensions
+            if (!matchingFile) {
+              const extensions = [".ts", ".tsx", ".js", ".jsx"];
+              for (const ext of extensions) {
+                matchingFile = repoFiles.find(
+                  (f) => f.path === `${importPath}${ext}`
+                );
+                if (matchingFile) break;
+              }
+            }
+
+            // If still not found, try removing extension and looking for index files
+            if (!matchingFile) {
+              const indexFiles = [
+                "index.ts",
+                "index.tsx",
+                "index.js",
+                "index.jsx",
+              ];
+              for (const indexFile of indexFiles) {
+                matchingFile = repoFiles.find(
+                  (f) => f.path === `${importPath}/${indexFile}`
+                );
+                if (matchingFile) break;
+              }
+            }
+
+            if (matchingFile) {
+              // Pass current file as parent to track dependents
+              await processFile(matchingFile, targetFile);
+            }
+          }
+        } catch (error) {
+          console.error(
+            `Failed to fetch file content for ${targetFile.path}:`,
+            error
+          );
+        } finally {
+          // Remove loading state for this file
+          setLoadingFiles((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(targetFile.path);
+            return newSet;
+          });
+
+          // Remove from processing set
+          processingFiles.delete(targetFile.path);
+        }
+      };
+
+      // Start processing from the root file
+      await processFile(file);
+    },
+    [connection, selectedFiles, repoFiles]
   );
 
   const clearSelectedFiles = useCallback(() => {
@@ -306,7 +405,7 @@ export function useRepoConnection(): UseRepoConnectionReturn {
     disconnect,
     loadRepoFiles,
     toggleFileSelection,
-    autoSelectImportedFiles,
+    selectFileWithDependencies,
     clearSelectedFiles,
   };
 }

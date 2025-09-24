@@ -20,6 +20,7 @@ interface FileTreeDisplayProps {
   onLoadFiles: () => void;
   onToggleExpanded: (path: string) => void;
   onToggleSelection: (file: RepoFile) => void;
+  onSelectWithDependencies: (file: RepoFile) => void;
   onFeatureNameChange: (value: string) => void;
 }
 
@@ -37,6 +38,7 @@ export const FileTreeDisplay = React.memo(function FileTreeDisplay({
   onLoadFiles,
   onToggleExpanded,
   onToggleSelection,
+  onSelectWithDependencies,
   onFeatureNameChange,
 }: FileTreeDisplayProps) {
   // # 6.2.1 Render Tree Function
@@ -51,6 +53,7 @@ export const FileTreeDisplay = React.memo(function FileTreeDisplay({
         loadingFiles={loadingFiles}
         onToggleExpanded={onToggleExpanded}
         onToggleSelection={onToggleSelection}
+        onSelectWithDependencies={onSelectWithDependencies}
       />
     ));
   }, [
@@ -60,6 +63,7 @@ export const FileTreeDisplay = React.memo(function FileTreeDisplay({
     loadingFiles,
     onToggleExpanded,
     onToggleSelection,
+    onSelectWithDependencies,
   ]);
 
   return (

@@ -15,6 +15,10 @@ interface FileCompatible {
   name: string;
   size: number;
   text: string;
+  dependents?: {
+    name: string;
+    path: string;
+  }[];
 }
 
 export const Route = createFileRoute("/(generate-tests)/generate-tests")({
@@ -35,12 +39,15 @@ function Index() {
   const repoConnectionData = useRepoConnection();
   const { selectedFiles } = repoConnectionData;
 
+  console.log({ selectedFiles });
+
   // Convert SelectedRepoFile to FileWithPath for existing dependencies hook
   const fileCompatibleFiles: FileCompatible[] = selectedFiles.map((file) => ({
     path: file.path,
     name: file.name,
     size: file.size,
     text: file.content, // Add content for compatibility
+    dependents: file.dependents,
   }));
 
   // File Tree Management Hook

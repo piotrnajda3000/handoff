@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Stack,
   Box,
@@ -18,6 +18,10 @@ interface FileWithPathLike {
   path?: string;
   name: string;
   size?: number;
+  dependents?: {
+    name: string;
+    path: string;
+  }[];
 }
 import { InteractiveCanvas } from "src/routes/(generate-tests)/-components/interactive-canvas/interactive-canvas";
 import type { Dependency } from "src/hooks/use-dependencies";
@@ -58,6 +62,29 @@ export function StepTwoDescribeRelations({
     generateDependencies,
   } = dependenciesData;
 
+  // Calculate potential dependencies from file dependents
+  const potentialDependenciesCount = useMemo(() => {
+    let count = 0;
+    const existingPairs = new Set(
+      dependencies.map((dep) => `${dep.from}->${dep.to}`)
+    );
+
+    files.forEach((file) => {
+      const fileIdentifier = file.path || file.name;
+
+      if (file.dependents && file.dependents.length > 0) {
+        file.dependents.forEach((dependent) => {
+          const pairKey = `${dependent.path}->${fileIdentifier}`;
+          if (!existingPairs.has(pairKey)) {
+            count++;
+          }
+        });
+      }
+    });
+
+    return count;
+  }, [files, dependencies]);
+
   return (
     <Stack className="gap-lg">
       <Box className="text-center">
@@ -93,7 +120,9 @@ export function StepTwoDescribeRelations({
                     onClick={generateDependencies}
                     variant="light"
                   >
-                    Generate
+                    Generate{" "}
+                    {potentialDependenciesCount > 0 &&
+                      `(${potentialDependenciesCount})`}
                   </Button>
                   <Button
                     leftSection={<IconPlus size={16} />}
@@ -108,8 +137,10 @@ export function StepTwoDescribeRelations({
               {dependencies.length === 0 ? (
                 <Paper className="border-gray-200 rounded-md p-lg">
                   <Text className="text-center text-gray-600">
-                    No dependencies defined yet. Click "Generate" or "Add" to
-                    get started.
+                    No dependencies defined yet.
+                    {potentialDependenciesCount > 0
+                      ? ` Click "Generate" to auto-create ${potentialDependenciesCount} dependencies from file imports, or "Add" to create manually.`
+                      : ' Click "Add" to create dependencies manually, or use "Select with Dependencies" in step 1 to auto-detect relationships.'}
                   </Text>
                 </Paper>
               ) : (
@@ -119,8 +150,8 @@ export function StepTwoDescribeRelations({
                       key={dependency.id}
                       className="border-gray-200 rounded-md p-md"
                     >
-                      <Group className="justify-between flex-end">
-                        <Group className="flex-1 flex-end wrap-nowrap">
+                      <div className="flex justify-between flex-end">
+                        <div className="flex flex-1 gap-xs flex-end wrap-nowrap">
                           <Select
                             label="From"
                             placeholder="Select file"
@@ -138,7 +169,6 @@ export function StepTwoDescribeRelations({
                                 value || ""
                               )
                             }
-                            style={{ minWidth: 200 }}
                           />
                           <Select
                             label="Connection"
@@ -151,7 +181,6 @@ export function StepTwoDescribeRelations({
                                 value || "uses"
                               )
                             }
-                            className="min-w-[120px]"
                           />
                           <Select
                             label="To"
@@ -161,10 +190,9 @@ export function StepTwoDescribeRelations({
                             onChange={(value) =>
                               updateDependency(dependency.id, "to", value || "")
                             }
-                            className="min-w-[200px]"
                           />
-                        </Group>
-                        <div className={Select.classes.wrapper}>
+                        </div>
+                        {/* <div className={Select.classes.wrapper}>
                           <Box className="flex items-center h-[var(--input-height)]">
                             <ActionIcon
                               variant="subtle"
@@ -174,8 +202,8 @@ export function StepTwoDescribeRelations({
                               <IconTrash size={16} />
                             </ActionIcon>
                           </Box>
-                        </div>
-                      </Group>
+                        </div> */}
+                      </div>
                     </Paper>
                   ))}
                 </Stack>

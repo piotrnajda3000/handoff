@@ -30,6 +30,10 @@ export interface SelectedRepoFile {
   name: string;
   content: string;
   size: number;
+  dependents?: {
+    name: string;
+    path: string;
+  }[];
 }
 
 // API Response types
