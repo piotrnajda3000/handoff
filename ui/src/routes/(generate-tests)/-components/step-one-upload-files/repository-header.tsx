@@ -27,7 +27,11 @@ export function RepositoryHeader({
         {/* # 5.2.1 Connection Status */}
         <Group className="gap-xs">
           <IconCheck size="1rem" color="green" />
-          <Text size="sm" className="font-medium">
+          <Text
+            size="sm"
+            className="font-medium"
+            data-qa="connected-repository-info"
+          >
             Connected to {connection?.owner}/{connection?.repo}
           </Text>
         </Group>

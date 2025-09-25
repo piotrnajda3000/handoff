@@ -1,56 +1,9 @@
 import { Given, When, Then } from "@badeball/cypress-cucumber-preprocessor";
-import { FILES_TO_TEXT_AS_FILES } from "@ui/mocks/files.mock";
 
 // Navigate to generate tests page
 Given("I visit the generate tests page", () => {
   cy.visit("/generate-tests");
 });
-
-// File upload steps
-When("I upload the mock files", () => {
-  const dropzoneSelector = '[data-qa="dropzone-container"]';
-
-  // Wait for the dropzone to be visible
-  cy.get(dropzoneSelector).should("be.visible");
-
-  // Get the mock files and upload them
-  const files = FILES_TO_TEXT_AS_FILES;
-
-  // For Cypress file upload, we need to create the files with proper format
-  const fileFixtures = files.map((file, index) => ({
-    contents: file.text || "",
-    name: file.name,
-    mimeType: "text/plain",
-  }));
-
-  // Upload files to the dropzone
-  cy.get(dropzoneSelector).selectFile(fileFixtures, {
-    action: "drag-drop",
-  });
-});
-
-When("I upload {int} mock files", (fileCount: number) => {
-  const dropzoneSelector = '[data-qa="dropzone-container"]';
-
-  // Wait for the dropzone to be visible
-  cy.get(dropzoneSelector).should("be.visible");
-
-  // Get the specified number of mock files
-  const files = FILES_TO_TEXT_AS_FILES.slice(0, fileCount);
-
-  // Create file fixtures for Cypress
-  const fileFixtures = files.map((file, index) => ({
-    contents: file.text || "",
-    name: file.name,
-    mimeType: "text/plain",
-  }));
-
-  // Upload files to the dropzone
-  cy.get(dropzoneSelector).selectFile(fileFixtures, {
-    action: "drag-drop",
-  });
-});
-
 // Navigation steps specific to the stepper
 When("I click the Next button", () => {
   cy.get('[data-qa="next-button"]').click();
@@ -58,18 +11,6 @@ When("I click the Next button", () => {
 
 When("I click the Previous button", () => {
   cy.get('[data-qa="previous-button"]').click();
-});
-
-// Assertions for file upload
-Then("I should see {int} uploaded files", (fileCount: number) => {
-  // Check that the correct number of files are displayed
-  for (let i = 0; i < fileCount; i++) {
-    cy.get(`[data-qa="selected-file-${i}"]`).should("be.visible");
-  }
-});
-
-Then("I should see the uploaded file {string}", (name: string) => {
-  cy.get('[data-qa^="selected-file-"]').should("contain.text", name);
 });
 
 Then("the Next button should be enabled", () => {
@@ -90,21 +31,25 @@ Then("I should be on step {int}", (stepNumber: number) => {
     .should("have.attr", "data-completed", "true");
 });
 
-Then("I should see the step title {string}", (stepTitle: string) => {
-  cy.contains(".mantine-Stepper-stepLabel", stepTitle).should("be.visible");
+const ELEMENTS = {
+  "repository-url-input": '[data-qa="repository-url-input"]',
+  "access-token-input": '[data-qa="access-token-input"]',
+  "connect-repository-button": '[data-qa="connect-repository-button"]',
+  "connected-repository-info": '[data-qa="connected-repository-info"]',
+};
+
+Given("I fill the repository url input with {string}", (url: string) => {
+  cy.get(ELEMENTS["repository-url-input"]).type(url);
 });
 
-// Page content assertions
-Then("I should see the welcome message", () => {
-  cy.contains("Welcome to Handoff").should("be.visible");
+Given("I fill the access token input with {string}", (token: string) => {
+  cy.get(ELEMENTS["access-token-input"]).type(token);
 });
 
-Then("I should see the generate tests content", () => {
-  cy.contains("Generate Tests").should("be.visible");
-  cy.contains("Processing your files").should("be.visible");
+Given("I click the connect repository button", () => {
+  cy.get(ELEMENTS["connect-repository-button"]).click();
 });
 
-Then("I should see the dropzone", () => {
-  cy.get('[data-qa="dropzone-container"]').should("be.visible");
-  cy.get('[data-qa="dropzone-text-content"]').should("be.visible");
+Then("I should see the connected repository info {string}", (info: string) => {
+  cy.get(ELEMENTS["connected-repository-info"]).should("contain.text", info);
 });

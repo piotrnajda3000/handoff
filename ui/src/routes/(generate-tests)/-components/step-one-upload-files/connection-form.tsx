@@ -75,6 +75,7 @@ export function ConnectionForm({
             label="Repository URL"
             placeholder="https://github.com/username/repository or git@github.com:username/repository.git"
             value={repoUrl}
+            data-qa="repository-url-input"
             onChange={(e) => onRepoUrlChange(e.currentTarget.value)}
             required
           />
@@ -85,6 +86,7 @@ export function ConnectionForm({
             placeholder="Your GitHub personal access token"
             description="Create a token at https://github.com/settings/tokens with 'repo' scope for private repositories"
             value={accessToken}
+            data-qa="access-token-input"
             onChange={(e) => onAccessTokenChange(e.currentTarget.value)}
             required
           />
@@ -105,6 +107,7 @@ export function ConnectionForm({
             onClick={onConnect}
             loading={isConnecting}
             disabled={!isFormValid}
+            data-qa="connect-repository-button"
             leftSection={<IconBrandGithub size="1rem" />}
           >
             {isConnecting ? "Connecting..." : "Connect Repository"}

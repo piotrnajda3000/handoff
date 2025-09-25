@@ -6,16 +6,8 @@ Feature: Generate Tests Page
   Background:
     Given I visit the generate tests page
 
-  Scenario: Upload mock files and proceed to next step
-    When I should see the welcome message
-    And I should see the dropzone
-    And the Next button should be disabled
-    When I upload the mock files
-    Then I should see 3 uploaded files
-    And I should see the uploaded file "index.tsx"
-    And I should see the uploaded file "dropzone.tsx"
-    And I should see the uploaded file "use-dropzone.tsx"
-    And the Next button should be enabled
-    When I click the Next button
-    Then I should be on step 2
-    And I should see the generate tests content
+  Scenario: Enter repo details and connect repository
+    When I fill the repository url input with "https://github.com/facebook/react"
+    And I fill the access token input with "1234567890"
+    And I click the connect repository button
+    Then I should see the connected repository info "Connected to facebook/react"
