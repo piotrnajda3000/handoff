@@ -158,7 +158,7 @@ async function buildApp() {
           files: final,
         },
         {
-          recursionLimit: 60,
+          recursionLimit: 150,
         }
       );
 
