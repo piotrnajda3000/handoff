@@ -3,7 +3,10 @@ import { Stack, Box, Title, Text, Tabs, Space } from "@mantine/core";
 import type { GenerateReportResponse } from "handoff-server/schemas";
 import { MarkdownRenderer } from "../../../../components/markdown-renderer";
 import { TableOfContents } from "../../../../components/table-of-contents";
-import { InteractiveCanvas, type Edge } from "../interactive-canvas/interactive-canvas";
+import {
+  InteractiveCanvas,
+  type Edge,
+} from "../interactive-canvas/interactive-canvas";
 
 type StepThreeViewResultsProps = {
   report?: GenerateReportResponse;
@@ -120,8 +123,8 @@ export function StepThreeViewResults({ report }: StepThreeViewResultsProps) {
                 <Text size="sm" c="dimmed">
                   Interactive visualization of file dependencies. Drag nodes to
                   organize them, use mouse wheel to zoom, click and drag empty
-                  space to pan. Click on a node to view file annotations, or click
-                  on an arrow to see dependency analysis.
+                  space to pan. Click on a node to view file annotations, or
+                  click on an arrow to see dependency analysis.
                 </Text>
                 <InteractiveCanvas
                   files={graphData.files}

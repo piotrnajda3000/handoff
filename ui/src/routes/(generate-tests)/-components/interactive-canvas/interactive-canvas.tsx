@@ -187,7 +187,9 @@ export function toggleNodeTooltip(
   annotations: string[]
 ): CanvasState {
   const isCurrentlyVisible =
-    state.tooltip.visible && state.tooltip.type === "node" && state.tooltip.nodeId === nodeId;
+    state.tooltip.visible &&
+    state.tooltip.type === "node" &&
+    state.tooltip.nodeId === nodeId;
 
   return {
     ...state,
@@ -529,33 +531,33 @@ export function InteractiveCanvas({
 
     // ##### 4.8.1.5. Merge enter and update selections
     const allEdges = enterEdges.merge(edgeLines);
-    
+
     // ##### 4.8.1.5b. Apply click handlers and visual feedback to all edges
     allEdges
-      .style("cursor", (d) => d.analysis ? "pointer" : "default")
-      .attr("stroke-width", (d) => d.analysis ? 3 : 2)
-      .attr("opacity", (d) => d.analysis ? 0.8 : 0.7)
-      .on("click", function(event, d) {
+      .style("cursor", (d) => (d.analysis ? "pointer" : "default"))
+      .attr("stroke-width", (d) => (d.analysis ? 3 : 2))
+      .attr("opacity", (d) => (d.analysis ? 0.8 : 0.7))
+      .on("click", function (event, d) {
         event.stopPropagation();
-        
+
         if (!d.analysis) return; // Only show tooltip if analysis exists
-        
+
         // Get click position for tooltip
         const clickPosition: Point = {
           x: event.clientX,
           y: event.clientY,
         };
-        
-        setCanvasState((prev) => 
+
+        setCanvasState((prev) =>
           showEdgeTooltip(prev, d.id, clickPosition, d.analysis!)
         );
       })
-      .on("mouseenter", function(_event, d) {
+      .on("mouseenter", function (_event, d) {
         if (d.analysis) {
           d3.select(this).attr("stroke", "var(--mantine-color-green-5)");
         }
       })
-      .on("mouseleave", function(_event, d) {
+      .on("mouseleave", function (_event, d) {
         if (d.analysis) {
           d3.select(this).attr("stroke", "var(--mantine-color-gray-6)");
         }
@@ -932,7 +934,7 @@ export function InteractiveCanvas({
             )}
           </>
         )}
-        
+
         {isEdgeTooltip && (
           <>
             <div
