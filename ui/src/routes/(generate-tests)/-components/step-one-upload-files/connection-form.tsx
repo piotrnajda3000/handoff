@@ -45,10 +45,11 @@ export function ConnectionForm({
       {/* # 4.2.2 Header Section */}
       <Box className="text-center">
         <Title order={1} size="h2" className="mb-md">
-          Welcome to Handoff
+          What's in my repo?
         </Title>
         <Text className="text-gray-600">
-          Connect your repository to generate natural language test cases
+          Connect your repository to generate natural language report on
+          selected files
         </Text>
       </Box>
 
