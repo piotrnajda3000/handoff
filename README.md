@@ -1,6 +1,8 @@
 # Handoff
 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2c31e48d-7455-481e-acbc-395c11b7a213" />
+
+<img width="1883" height="908" alt="image" src="https://github.com/user-attachments/assets/1fd03b34-b2ba-42e8-97b4-69f14f165b9f" />
+
 
 An AI-powered documentation tool for Quality Engineering (QE) handoff processes. Handoff analyzes codebases and generates comprehensive reports to facilitate better understanding of code relationships, dependencies, and overall system architecture.
 
