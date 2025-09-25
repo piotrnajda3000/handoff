@@ -4,8 +4,6 @@ import type {
   AnnotateRequest,
   GenerateReportResponse,
 } from "handoff-server/schemas";
-import { MOCK_REPORT } from "src/mocks/report.mock";
-// import { MOCK_REPORT } from "src/mocks/report.mock";
 
 interface UseAnnotateOptions {
   onSuccess?: (data: GenerateReportResponse) => void;
