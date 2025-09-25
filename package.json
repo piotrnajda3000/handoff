@@ -12,6 +12,8 @@
   "scripts": {
     "lint:ui": "eslint ui/**/*.{ts,tsx} --fix",
     "lint:server": "eslint server/**/*.{ts} --fix",
-    "lint": "npm run lint:ui && npm run lint:server"
+    "lint": "npm run lint:ui && npm run lint:server",
+    "dev:ui": "cd ui && npm run dev",
+    "dev:server": "cd server && npm run dev"
   }
 }
