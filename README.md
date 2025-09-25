@@ -4,8 +4,19 @@ A project for a remote vibe-coding hackathon, 99% written using an LLM.
 
 <img width="1883" height="908" alt="image" src="https://github.com/user-attachments/assets/1fd03b34-b2ba-42e8-97b4-69f14f165b9f" />
 
-
 An AI-powered documentation tool for Quality Engineering (QE) handoff processes. Handoff analyzes codebases and generates comprehensive reports to facilitate better understanding of code relationships, dependencies, and overall system architecture.
+
+## Screenshots 
+
+<img width="1899" height="915" alt="image" src="https://github.com/user-attachments/assets/2f4383ba-a443-4559-99a5-6eb720bcf88d" />
+
+<img width="1891" height="914" alt="image" src="https://github.com/user-attachments/assets/38dc8c22-2a78-44fc-9df5-cb842635f563" />
+
+<img width="1902" height="913" alt="image" src="https://github.com/user-attachments/assets/5f2865e4-d4e4-4abc-accc-235bf5c74bc4" />
+
+<img width="1920" height="928" alt="image" src="https://github.com/user-attachments/assets/cd7d448f-d724-43f6-b2ae-392f942b239e" />
+
+<img width="1905" height="917" alt="image" src="https://github.com/user-attachments/assets/6cf2ad46-a63d-4fa5-8729-c1e9606f3211" />
 
 ## Overview
 
