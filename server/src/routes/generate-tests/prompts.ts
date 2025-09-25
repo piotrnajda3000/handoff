@@ -31,26 +31,25 @@ Analyze the relationship between {fileAName} and {fileBName}.
 {fileBAnnotations}
 
 ## Task
-Provide a concise 2-3 sentence summary describing:
-- WHAT {fileAName} imports from {fileBName}
-- HOW these imports are used
-- WHY this dependency exists
+Provide a concise 2-3 sentence summary describing how one file might depend on another. 
 
-Example: "FileA imports UserService and validateEmail from FileB. It uses UserService for authentication and validateEmail for form validation. This provides essential user management functionality."
+Example: "FileB imports UserService and validateEmail from FileA. It uses UserService for authentication and validateEmail for form validation. This provides essential user management functionality."
 `.trimStart();
 
 export const FINAL_REPORT_AGENT_PROMPT = `
-Your task is to generate a comprehensive report on the feature/product.
+Your task is to generate a comprehensive user-friendly business/report on the feature/product.
 
 ## Directory
 {filesWithPaths}
 
-## Dependent -> Dependency
-{dependencies}
+Tools at your disposal - you should use each of them:
+- READ_DEPENDENTS tool to inspect a specific file's dependents - use it to understand the repository structure,
+- READ_DEPENDENCY_ANALYSIS tool to inspect analysis of a specific dependent file - use it to understand the relationship between two files (dependent -> dependency),
+- READ_ANNOTATIONS tool, to inspect file's annotations - use it to understand the file's purpose and functionality,
 
-Tools at your disposal:
+And if you need even more details use:
+- READ_ANNOTATED_FILE tool to for file content and annotations - use it to understand the file's content in detail,
 
-- READ_ANNOTATIONS tool, to inspect file's annotations,
-- READ_ANNOTATED_FILE tool to for more details, 
-- READ_DEPENDENCY_ANALYSIS tool to inspect a specific Dependency (right side of the arrow)
+# Product Report
+
 `.trimStart();

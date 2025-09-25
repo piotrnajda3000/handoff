@@ -14,4 +14,4 @@ export const returnOnlyChangesToFile = (
 };
 
 export const filterComments = (l: string) =>
-  !l.startsWith("\n") && l.startsWith("#");
+  !l.startsWith("\n") && (l.startsWith("#") || l.startsWith("// #"));

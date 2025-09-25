@@ -153,9 +153,14 @@ async function buildApp() {
       console.log("🔍 Generating Final Report for");
       console.log(JSON.stringify({ final }, null, 2));
       console.log("================================================");
-      const report = await reportAgent.invoke({
-        files: final,
-      });
+      const report = await reportAgent.invoke(
+        {
+          files: final,
+        },
+        {
+          recursionLimit: 60,
+        }
+      );
 
       return reply.status(200).send({
         report: report.messages.at(-1)?.text ?? "",

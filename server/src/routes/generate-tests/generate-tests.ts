@@ -17,13 +17,14 @@ import * as PROMPTS from "./prompts.js";
 import * as MOCKS from "./mocks.js";
 import { createAgent, HumanMessage, SystemMessage, tool } from "langchain";
 import { RunnableConfig } from "@langchain/core/runnables";
+import { ChatOpenAI } from "@langchain/openai";
 
 dotenv.config();
 
-const llm = new ChatGoogleGenerativeAI({
-  model: "gemini-2.5-flash",
+const llm = new ChatOpenAI({
+  model: "gpt-4o",
   temperature: 0,
-  apiKey: process.env.GOOGLE_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Graph state
@@ -182,10 +183,10 @@ const StateFinalReport = Annotation.Root({
   report: Annotation<string>,
 });
 
-const llmHeavy = new ChatGoogleGenerativeAI({
-  model: "gemini-2.5-flash",
+const llmHeavy = new ChatOpenAI({
+  model: "gpt-4o",
   temperature: 0,
-  apiKey: process.env.GOOGLE_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 const customAgentState = z.object({
@@ -256,19 +257,51 @@ const readAnnotations = tool(
 );
 
 const readDependencyAnalysis = tool(
-  ({ path }, config) => {
+  ({ from, to }, config) => {
     console.log("================================================");
-    console.log("🔍 TOOL CALL: Reading dependency analysis", path);
+    console.log(
+      "🔍 TOOL CALL: Reading dependency analysis",
+      `${from} -> ${to}`
+    );
     const state = getCurrentTaskInput(config) as CustomAgentState;
-    const file = state.files.find((f) => f.path === path);
-    const analysis = file?.dependents.find((d) => d.path === path)?.analysis;
+    const file = state.files.find((f) => f.path === from);
+    const analysis = file?.dependents.find((d) => d.path === to)?.analysis;
     console.log("🔍 TOOL RETURN: ", analysis);
     console.log("================================================");
     return analysis;
   },
   {
     name: "READ_DEPENDENCY_ANALYSIS",
-    description: "Read the dependency analysis of a file",
+    description:
+      "Read the dependency analysis between two files from (dependent) to (dependency) to understand the relationship between them",
+    schema: z.object({
+      from: z.string(),
+      to: z.string(),
+    }),
+  }
+);
+
+const readDependents = tool(
+  ({ path }, config) => {
+    console.log("================================================");
+    console.log("🔍 TOOL CALL: Reading dependents", path);
+    const state = getCurrentTaskInput(config) as CustomAgentState;
+    const dependencies = state.files
+      .filter((f) => f.path === path)
+      .flatMap((f) => f.dependents)
+      .map((d) => `- ${d.path}`);
+    console.log("🔍 TOOL RETURN: ", dependencies);
+    console.log("================================================");
+
+    const returnText = `The below files are dependent on ${path}:
+${[...new Set(dependencies.map((d) => d))].join("\n")}`;
+
+    return returnText;
+  },
+  {
+    name: "READ_DEPENDENTS",
+    description:
+      "Read the dependents of a file to understand the repository structure and then read dependency analysis",
     schema: z.object({
       path: z.string(),
     }),
@@ -277,13 +310,18 @@ const readDependencyAnalysis = tool(
 
 export const reportAgent = createAgent({
   llm: llmHeavy,
-  tools: [readAnnotatedFile, readAnnotations, readDependencyAnalysis],
+  tools: [
+    readAnnotatedFile,
+    readAnnotations,
+    readDependencyAnalysis,
+    readDependents,
+  ],
   stateSchema: customAgentState,
   prompt(state, config) {
     const filesWithPaths = state.files.map((f) => `- ${f.path}`).join(",\n");
     const dependencies = state.files
       .flatMap((f) => {
-        return f.dependents.map((d) => `${f.path} -> ${d.path}`);
+        return f.dependents.map((d) => `- ${f.path} -> ${d.path}`);
       })
       .join(",\n");
 
