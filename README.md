@@ -1,6 +1,6 @@
 # Handoff
 
-A project for a remote vibe-coding hackathon, 99% written using an LLM. 
+A project for a remote vibe-coding hackathon, 99% written using an LLM. You can also read the PRD/summary: [here](https://github.com/piotrnajda3000/handoff/blob/main/SUMMARY.md). 
 
 <img width="1883" height="908" alt="image" src="https://github.com/user-attachments/assets/1fd03b34-b2ba-42e8-97b4-69f14f165b9f" />
 
