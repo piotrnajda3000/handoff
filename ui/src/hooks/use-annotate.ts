@@ -15,11 +15,11 @@ interface UseAnnotateOptions {
 export const useAnnotate = (options?: UseAnnotateOptions) => {
   return useMutation<GenerateReportResponse, Error, AnnotateRequest>({
     mutationFn: async (request: AnnotateRequest) => {
-      return Promise.resolve(MOCK_REPORT);
-      // return apiPost<AnnotateRequest, GenerateReportResponse>({
-      //   endpoint: "/generate-report",
-      //   body: request,
-      // });
+      // return Promise.resolve(MOCK_REPORT);
+      return apiPost<AnnotateRequest, GenerateReportResponse>({
+        endpoint: "/generate-report",
+        body: request,
+      });
     },
     onSuccess: options?.onSuccess,
     onError: options?.onError,

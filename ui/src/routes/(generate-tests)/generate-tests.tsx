@@ -30,12 +30,8 @@ export const Route = createFileRoute("/(generate-tests)/generate-tests")({
 function Index() {
   const [currentStep, setCurrentStep] = useState(0);
 
-  const [repoUrl, setRepoUrl] = useState(
-    "https://github.com/piotrnajda3000/handoff.git"
-  );
-  const [accessToken, setAccessToken] = useState(
-    "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"
-  );
+  const [repoUrl, setRepoUrl] = useState("");
+  const [accessToken, setAccessToken] = useState("");
 
   // Repository connection hook - manages selected files internally
   const repoConnectionData = useRepoConnection();

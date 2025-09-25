@@ -51,7 +51,8 @@ export function useRepoConnection(): UseRepoConnectionReturn {
   const [fileLoadError, setFileLoadError] = useState<string | null>(null);
 
   const [selectedFiles, setSelectedFiles] = useState<SelectedRepoFile[]>(
-    MOCK_SELECTED_FILES_2
+    // MOCK_SELECTED_FILES_2
+    []
   );
   // useState<SelectedRepoFile[]>([]);
   const [loadingFiles, setLoadingFiles] = useState<Set<string>>(new Set());
