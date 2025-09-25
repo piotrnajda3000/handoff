@@ -1,5 +1,6 @@
 # Handoff
 
+A project for a remote vibe-coding hackathon, 99% written using an LLM. 
 
 <img width="1883" height="908" alt="image" src="https://github.com/user-attachments/assets/1fd03b34-b2ba-42e8-97b4-69f14f165b9f" />
 
