@@ -11,8 +11,6 @@ import {
   filterRelevantImports,
   resolveToFullPaths,
 } from "../utils/import-parse.util";
-import { MOCK_SELECTED_FILES_2 } from "src/mocks/files.mock";
-// import { MOCK_SELECTED_FILES } from "src/mocks/files.mock";
 
 export interface UseRepoConnectionReturn {
   // Connection state

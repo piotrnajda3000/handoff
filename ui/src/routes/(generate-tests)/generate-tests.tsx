@@ -155,7 +155,7 @@ function Index() {
   return (
     <Container size="md" className="h-full flex flex-col">
       <Center className="my-auto">
-        <Paper className="w-full max-w-[700px] h-full shadow-lg rounded-md p-xl">
+        <Paper className="w-full h-full shadow-lg rounded-md p-xl">
           <div className="flex flex-col">
             {/* Step Progress Indicator */}
             <Box>
