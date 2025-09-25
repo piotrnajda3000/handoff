@@ -20,7 +20,7 @@ function generateSlug(text: string): string {
 
 // Custom components for react-markdown to add IDs to headings
 const components: Components = {
-  h1: ({ children, node }) => {
+  h1: ({ children }) => {
     const text = children?.toString() || "";
     const id = generateSlug(text);
     return <h1 id={id}>{children}</h1>;
@@ -58,7 +58,7 @@ export function MarkdownRenderer({
   ...boxProps
 }: MarkdownRendererProps) {
   return (
-    <Box {...boxProps} className={`prose ${className}`}>
+    <Box {...boxProps} className={`prose  ${className}`}>
       <ReactMarkdown components={components}>{content}</ReactMarkdown>
     </Box>
   );
