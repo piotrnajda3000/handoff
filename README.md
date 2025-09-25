@@ -1,5 +1,7 @@
 # Handoff
 
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/2c31e48d-7455-481e-acbc-395c11b7a213" />
+
 An AI-powered documentation tool for Quality Engineering (QE) handoff processes. Handoff analyzes codebases and generates comprehensive reports to facilitate better understanding of code relationships, dependencies, and overall system architecture.
 
 ## Overview
@@ -152,7 +154,16 @@ handoff/
 └── docs/                      # Documentation
 ```
 
-## Development
+## Prompt History
+
+<img width="470" height="406" alt="image" src="https://github.com/user-attachments/assets/d9f220e6-95e1-4d77-abbb-e176baf9f9ca" />
+
+<img width="475" height="419" alt="image" src="https://github.com/user-attachments/assets/04af8d55-d8a5-4a22-b12b-290a364481fc" />
+
+<img width="511" height="457" alt="image" src="https://github.com/user-attachments/assets/3c96e7eb-3a48-42b0-b66c-ff4bb2cdbfcb" />
+
+<img width="506" height="372" alt="image" src="https://github.com/user-attachments/assets/48cd9db7-fa7e-477a-89e3-c9daa597e9c4" />
+
 
 ### Testing
 
