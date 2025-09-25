@@ -156,7 +156,7 @@ handoff/
 └── docs/                      # Documentation
 ```
 
-## Prompt History
+## Chat History
 
 <img width="470" height="406" alt="image" src="https://github.com/user-attachments/assets/d9f220e6-95e1-4d77-abbb-e176baf9f9ca" />
 
