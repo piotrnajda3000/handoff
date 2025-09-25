@@ -1,8 +1,8 @@
 import { Type, type Static } from "@sinclair/typebox";
 
 // Request/Response schemas for the annotate workflow
-export const AnnotateRequestSchema = Type.Object({
-  fileName: Type.String({
+export const AnnotateRequestItemSchema = Type.Object({
+  name: Type.String({
     minLength: 1,
     description: "Name of the file to process",
   }),
@@ -10,17 +10,59 @@ export const AnnotateRequestSchema = Type.Object({
     minLength: 1,
     description: "Content of the file to annotate",
   }),
+  path: Type.String({
+    minLength: 1,
+    description: "Path of the file to process",
+  }),
+  dependents: Type.Array(
+    Type.Object({
+      name: Type.String(),
+      path: Type.String(),
+    }),
+    {
+      description: "Array of dependent files",
+    }
+  ),
 });
+export const AnnotateRequestSchema = Type.Array(AnnotateRequestItemSchema);
+export type AnnotateRequestItem = Static<typeof AnnotateRequestItemSchema>;
+export type AnnotateRequest = Static<typeof AnnotateRequestSchema>;
 
 export const AnnotateResponseSchema = Type.Object({
-  fileName: Type.String({ description: "Name of the processed file" }),
-  comments: Type.Array(Type.String(), {
-    description: "Array of extracted comments",
+  path: Type.String({ description: "Path of the processed file" }),
+  annotations: Type.Array(Type.String(), {
+    description: "Array of extracted annotations",
   }),
   annotatedText: Type.String({
     description: "The annotated code with markdown headings",
   }),
 });
+export type AnnotateResponse = Static<typeof AnnotateResponseSchema>;
+
+const DependencyAnalyzeResponseSchema = Type.Object({
+  analysis: Type.String({ description: "Analysis of the file" }),
+});
+
+export const GenerateReportResponseSchema = Type.Object({
+  report: Type.String({ description: "Report of the files" }),
+  files: Type.Array(
+    Type.Object({
+      ...AnnotateRequestItemSchema.properties,
+      ...AnnotateResponseSchema.properties,
+      dependents: Type.Array(
+        Type.Object({
+          ...AnnotateRequestItemSchema.properties.dependents.items.properties,
+          ...DependencyAnalyzeResponseSchema.properties,
+        })
+      ),
+    })
+  ),
+});
+export type GenerateReportResponse = Static<
+  typeof GenerateReportResponseSchema
+>;
+
+// Other stuff
 
 export const ErrorResponseSchema = Type.Object({
   error: Type.String({ description: "Error message" }),
@@ -71,9 +113,6 @@ export const RepoGetFileContentResponseSchema = Type.Object({
   content: Type.String({ description: "Base64 decoded file content" }),
 });
 
-// Inferred TypeScript types from TypeBox schemas
-export type AnnotateRequest = Static<typeof AnnotateRequestSchema>;
-export type AnnotateResponse = Static<typeof AnnotateResponseSchema>;
 export type ErrorResponse = Static<typeof ErrorResponseSchema>;
 
 export type RepoConnection = Static<typeof RepoConnectionSchema>;

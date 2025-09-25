@@ -1,19 +1,24 @@
 import { useMutation } from "@tanstack/react-query";
 import { apiPost } from "../utils/api";
-import type { AnnotateRequest, AnnotateResponse } from "handoff-server/schemas";
+import type {
+  AnnotateRequest,
+  GenerateReportResponse,
+} from "handoff-server/schemas";
+import { MOCK_REPORT } from "src/mocks/report.mock";
 
 interface UseAnnotateOptions {
-  onSuccess?: (data: AnnotateResponse) => void;
+  onSuccess?: (data: GenerateReportResponse) => void;
   onError?: (error: Error) => void;
 }
 
 export const useAnnotate = (options?: UseAnnotateOptions) => {
-  return useMutation<AnnotateResponse, Error, AnnotateRequest>({
+  return useMutation<GenerateReportResponse, Error, AnnotateRequest>({
     mutationFn: async (request: AnnotateRequest) => {
-      return apiPost<AnnotateRequest, AnnotateResponse>({
-        endpoint: "/annotate",
-        body: request,
-      });
+      return Promise.resolve(MOCK_REPORT);
+      // return apiPost<AnnotateRequest, GenerateReportResponse>({
+      //   endpoint: "/generate-report",
+      //   body: request,
+      // });
     },
     onSuccess: options?.onSuccess,
     onError: options?.onError,

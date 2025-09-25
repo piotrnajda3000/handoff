@@ -12,6 +12,9 @@ interface StepperNavigationButtonsProps {
   onPrevious: () => void;
   canProceedToNext?: boolean;
   nextButtonTooltip?: string;
+  nextButtonText?: string;
+  nextButtonIcon?: React.ReactNode;
+  nextButtonLoading?: boolean;
 }
 
 export function StepperNavigationButtons({
@@ -21,6 +24,9 @@ export function StepperNavigationButtons({
   onPrevious,
   canProceedToNext = true,
   nextButtonTooltip = "",
+  nextButtonText = "Next",
+  nextButtonIcon = <IconChevronRight size={16} />,
+  nextButtonLoading = false,
 }: StepperNavigationButtonsProps) {
   return (
     <Group className="justify-between">
@@ -48,11 +54,12 @@ export function StepperNavigationButtons({
             currentStep === totalSteps - 1 ? (
               <IconCheck size={16} />
             ) : (
-              <IconChevronRight size={16} />
+              nextButtonIcon
             )
           }
+          loading={nextButtonLoading}
         >
-          {currentStep === totalSteps - 1 ? "Finish" : "Next"}
+          {currentStep === totalSteps - 1 ? "Finish" : nextButtonText}
         </Button>
       </Tooltip>
     </Group>

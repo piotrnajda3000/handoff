@@ -57,8 +57,8 @@ function validateFiles(files: FileWithPath[]): {
   return { acceptedFiles, rejectedFiles };
 }
 
-function getFileIcon(fileName: string) {
-  const extension = fileName.toLowerCase().split(".").pop();
+function getFileIcon(name: string) {
+  const extension = name.toLowerCase().split(".").pop();
 
   switch (extension) {
     case "ts":

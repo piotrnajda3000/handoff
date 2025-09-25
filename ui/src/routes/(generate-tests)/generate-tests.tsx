@@ -8,6 +8,8 @@ import { StepOneUploadFiles } from "src/routes/(generate-tests)/-components/step
 import { StepTwoDescribeRelations } from "src/routes/(generate-tests)/-components/step-two-describe-relations/step-two-describe-relations";
 import { StepThreeViewResults } from "src/routes/(generate-tests)/-components/step-three-view-results/step-three-view-results";
 import { useFileTree } from "./-components/step-one-upload-files/use-file-tree";
+import { IconChevronRight, IconSparkles } from "@tabler/icons-react";
+import { useAnnotate } from "src/hooks/use-annotate";
 
 // Interface to make SelectedRepoFile compatible with FileWithPath
 interface FileCompatible {
@@ -15,7 +17,7 @@ interface FileCompatible {
   name: string;
   size: number;
   text: string;
-  dependents?: {
+  dependents: {
     name: string;
     path: string;
   }[];
@@ -47,7 +49,7 @@ function Index() {
     name: file.name,
     size: file.size,
     text: file.content, // Add content for compatibility
-    dependents: file.dependents,
+    dependents: file.dependents || [],
   }));
 
   // File Tree Management Hook
@@ -62,8 +64,14 @@ function Index() {
 
   const dependenciesData = useDependencies(fileCompatibleFiles);
 
-  const stepTitles = ["Connect Repository", "Generate Tests", "Review Results"];
+  const stepTitles = [
+    "Connect Repository",
+    "Generate Report",
+    "Review Results",
+  ];
   const totalSteps = stepTitles.length;
+
+  const [hasGeneratedTests, setHasGeneratedTests] = useState(false);
 
   const canProceedToNext = currentStep === 0 ? selectedFiles.length > 0 : true;
 
@@ -80,6 +88,12 @@ function Index() {
   };
 
   const handleNext = () => {
+    if (currentStep === 1) {
+      if (!hasGeneratedTests) {
+        handleGenerateTests();
+        return;
+      }
+    }
     if (currentStep < totalSteps - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -89,6 +103,26 @@ function Index() {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const {
+    mutateAsync: generateReport,
+    isPending: isGeneratingReport,
+    data: report,
+  } = useAnnotate();
+
+  const handleGenerateTests = () => {
+    generateReport(
+      fileCompatibleFiles.filter((file) =>
+        dependenciesData.dependencies.some(
+          (dependency) =>
+            dependency.from === file.path || dependency.to === file.path
+        )
+      )
+    ).then((res) => {
+      setHasGeneratedTests(true);
+      setCurrentStep(2);
+    });
   };
 
   const renderStepContent = () => {
@@ -116,7 +150,7 @@ function Index() {
           />
         );
       case 2:
-        return <StepThreeViewResults />;
+        return <StepThreeViewResults report={report} />;
       default:
         return null;
     }
@@ -146,8 +180,17 @@ function Index() {
                 totalSteps={totalSteps}
                 onNext={handleNext}
                 onPrevious={handlePrevious}
+                nextButtonLoading={isGeneratingReport}
                 canProceedToNext={canProceedToNext}
                 nextButtonTooltip={getNextButtonTooltip()}
+                nextButtonIcon={
+                  currentStep === 1 ? (
+                    <IconSparkles size={16} />
+                  ) : (
+                    <IconChevronRight size={16} />
+                  )
+                }
+                nextButtonText={currentStep === 1 ? "Generate Report" : "Next"}
               />
             </div>
           </div>

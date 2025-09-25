@@ -1,6 +1,11 @@
 import Fastify from "fastify";
 import { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import { runAnnotateWorkflow } from "./routes/generate-tests/generate-tests.utils.js";
+import { Type } from "@sinclair/typebox";
+import {
+  reportAgent,
+  runAnalyzeDependenciesWorkflow,
+  runAnnotateWorkflow,
+} from "./routes/generate-tests/generate-tests.js";
 import {
   testRepoConnection,
   listRepoFiles,
@@ -23,6 +28,7 @@ import {
   type RepoListFilesResponse,
   type RepoGetFileContentRequest,
   type RepoGetFileContentResponse,
+  GenerateReportResponseSchema,
 } from "./shared/schemas.js";
 
 async function buildApp() {
@@ -67,27 +73,94 @@ async function buildApp() {
     return reply.status(200).send();
   });
 
+  fastify.post("/test", {}, async (request, reply) => {
+    const result = await reportAgent.invoke({
+      files: [
+        {
+          name: "file1.ts",
+          text: "console.log('Hello, world!');",
+          annotatedText: "// # Console log\nconsole.log('Hello, world!');",
+          path: "file1.ts",
+          annotations: ["# Console log"],
+          dependents: [],
+        },
+      ],
+    });
+    return reply.status(200).send(result.messages.at(-1)?.text);
+  });
+
   // Route to run annotation workflow with schema validation
   fastify.post<{
     Body: AnnotateRequest;
-    Reply: AnnotateResponse;
     ReplyError: ErrorResponse;
   }>(
-    "/annotate",
+    "/generate-report",
     {
       schema: {
         body: AnnotateRequestSchema,
         response: {
-          200: AnnotateResponseSchema,
+          200: GenerateReportResponseSchema,
           400: ErrorResponseSchema,
           500: ErrorResponseSchema,
         },
       },
     },
     async (request, reply) => {
-      const { fileName, text } = request.body;
-      const result = await runAnnotateWorkflow(fileName, text);
-      return reply.status(200).send(result);
+      console.log("🔍 Generate Report - Input");
+      console.log("================================================");
+      console.log(JSON.stringify({ body: request.body }, null, 2));
+      console.log("================================================");
+
+      console.log("🔍 Generate Report - Annotating");
+      console.log("================================================");
+      const annotations = await Promise.all(
+        request.body.map((item) => runAnnotateWorkflow(item))
+      );
+      const filesWithAnnotations = request.body.map((item) => ({
+        ...item,
+        ...annotations.find((a) => a.path === item.path)!,
+      }));
+
+      console.log("🔍 Generate Report - Analyzing dependenices");
+      console.log("================================================");
+      const filesWithDependencyAnnotations = await Promise.all(
+        filesWithAnnotations.flatMap((item) =>
+          item.dependents.map((dependent) =>
+            runAnalyzeDependenciesWorkflow({
+              from: item,
+              to: {
+                ...dependent,
+                annotations:
+                  filesWithAnnotations.find((a) => a.path === dependent.path)
+                    ?.annotations ?? [],
+              },
+            })
+          )
+        )
+      );
+
+      const final = filesWithAnnotations.map((item) => ({
+        ...item,
+        dependents: item.dependents.map((dependent) => ({
+          ...dependent,
+          analysis: filesWithDependencyAnnotations.find(
+            (a) => a.to.path === dependent.path && a.from.path === item.path
+          )?.from.analysis,
+        })),
+      }));
+
+      console.log("================================================");
+      console.log("🔍 Generating Final Report for");
+      console.log(JSON.stringify({ final }, null, 2));
+      console.log("================================================");
+      const report = await reportAgent.invoke({
+        files: final,
+      });
+
+      return reply.status(200).send({
+        report: report.messages.at(-1)?.text ?? "",
+        files: final,
+      });
     }
   );
 

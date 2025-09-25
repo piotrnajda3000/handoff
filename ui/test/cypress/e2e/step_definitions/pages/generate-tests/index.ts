@@ -19,7 +19,7 @@ When("I upload the mock files", () => {
   // For Cypress file upload, we need to create the files with proper format
   const fileFixtures = files.map((file, index) => ({
     contents: file.text || "",
-    fileName: file.name,
+    name: file.name,
     mimeType: "text/plain",
   }));
 
@@ -41,7 +41,7 @@ When("I upload {int} mock files", (fileCount: number) => {
   // Create file fixtures for Cypress
   const fileFixtures = files.map((file, index) => ({
     contents: file.text || "",
-    fileName: file.name,
+    name: file.name,
     mimeType: "text/plain",
   }));
 
@@ -68,8 +68,8 @@ Then("I should see {int} uploaded files", (fileCount: number) => {
   }
 });
 
-Then("I should see the uploaded file {string}", (fileName: string) => {
-  cy.get('[data-qa^="selected-file-"]').should("contain.text", fileName);
+Then("I should see the uploaded file {string}", (name: string) => {
+  cy.get('[data-qa^="selected-file-"]').should("contain.text", name);
 });
 
 Then("the Next button should be enabled", () => {

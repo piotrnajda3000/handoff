@@ -25,6 +25,7 @@ interface FileWithPathLike {
 }
 import { InteractiveCanvas } from "src/routes/(generate-tests)/-components/interactive-canvas/interactive-canvas";
 import type { Dependency } from "src/hooks/use-dependencies";
+import clsx from "clsx";
 
 interface DependenciesData {
   dependencies: Dependency[];
@@ -58,8 +59,8 @@ export function StepTwoDescribeRelations({
     edges,
     addDependency,
     updateDependency,
-    removeDependency,
     generateDependencies,
+    removeDependency,
   } = dependenciesData;
 
   // Calculate potential dependencies from file dependents
@@ -144,16 +145,19 @@ export function StepTwoDescribeRelations({
                   </Text>
                 </Paper>
               ) : (
-                <Stack className="gap-sm">
+                <Stack className="gap-sm max-h-[400px] overflow-y-auto">
                   {dependencies.map((dependency) => (
                     <Paper
                       key={dependency.id}
                       className="border-gray-200 rounded-md p-md"
                     >
-                      <div className="flex justify-between flex-end">
+                      <div className="flex justify-between flex-end items-center">
                         <div className="flex flex-1 gap-xs flex-end wrap-nowrap">
                           <Select
                             label="From"
+                            labelProps={{
+                              className: "text-gray-600 text-xs",
+                            }}
                             placeholder="Select file"
                             data={fileOptions}
                             value={dependency.from}
@@ -174,6 +178,9 @@ export function StepTwoDescribeRelations({
                             label="Connection"
                             data={connectionOptions}
                             value={dependency.connection}
+                            labelProps={{
+                              className: "text-gray-600 text-xs",
+                            }}
                             onChange={(value) =>
                               updateDependency(
                                 dependency.id,
@@ -187,12 +194,22 @@ export function StepTwoDescribeRelations({
                             placeholder="Select file"
                             data={fileOptions}
                             value={dependency.to}
+                            labelProps={{
+                              className: "text-gray-600 text-xs",
+                            }}
+                            comboboxProps={{
+                              width: "max-content",
+                              position: "bottom-end",
+                              middlewares: { flip: false, shift: false },
+                            }}
                             onChange={(value) =>
                               updateDependency(dependency.id, "to", value || "")
                             }
                           />
                         </div>
-                        {/* <div className={Select.classes.wrapper}>
+                        <div
+                          className={clsx(Select.classes.wrapper, "self-end")}
+                        >
                           <Box className="flex items-center h-[var(--input-height)]">
                             <ActionIcon
                               variant="subtle"
@@ -202,7 +219,7 @@ export function StepTwoDescribeRelations({
                               <IconTrash size={16} />
                             </ActionIcon>
                           </Box>
-                        </div> */}
+                        </div>
                       </div>
                     </Paper>
                   ))}
