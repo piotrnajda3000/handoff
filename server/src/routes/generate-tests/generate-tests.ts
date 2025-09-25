@@ -265,10 +265,20 @@ const readDependencyAnalysis = tool(
     );
     const state = getCurrentTaskInput(config) as CustomAgentState;
     const file = state.files.find((f) => f.path === from);
-    const analysis = file?.dependents.find((d) => d.path === to)?.analysis;
+    let analysis =
+      file?.dependents.find((d) => d.path === to)?.analysis ||
+      file?.dependents.find((d) => d.path === from)?.analysis;
+    if (!analysis) {
+      const file2 = state.files.find((f) => f.path === to);
+      analysis =
+        file2?.dependents.find((d) => d.path === from)?.analysis ||
+        file2?.dependents.find((d) => d.path === to)?.analysis;
+    }
     console.log("🔍 TOOL RETURN: ", analysis);
     console.log("================================================");
-    return analysis;
+    return (
+      analysis || "No analysis found. Please use READ_ANNOTATED_FILE  instead."
+    );
   },
   {
     name: "READ_DEPENDENCY_ANALYSIS",
