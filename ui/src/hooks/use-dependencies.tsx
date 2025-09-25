@@ -92,8 +92,6 @@ export function useDependencies(files: FileWithPathOrContent[]) {
     files.forEach((file) => {
       const fileIdentifier = file.path || file.name;
 
-      console.log(file);
-
       // If this file has dependents, create dependencies for each one
       if (file.dependents && file.dependents.length > 0) {
         file.dependents.forEach((dependent) => {

@@ -11,6 +11,7 @@ import {
   filterRelevantImports,
   resolveToFullPaths,
 } from "../utils/import-parse.util";
+import { MOCK_SELECTED_FILES_2 } from "src/mocks/files.mock";
 // import { MOCK_SELECTED_FILES } from "src/mocks/files.mock";
 
 export interface UseRepoConnectionReturn {
@@ -49,9 +50,10 @@ export function useRepoConnection(): UseRepoConnectionReturn {
   const [isLoadingFiles, setIsLoadingFiles] = useState(false);
   const [fileLoadError, setFileLoadError] = useState<string | null>(null);
 
-  const [selectedFiles, setSelectedFiles] =
-    // useState<SelectedRepoFile[]>(MOCK_SELECTED_FILES);
-    useState<SelectedRepoFile[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<SelectedRepoFile[]>(
+    MOCK_SELECTED_FILES_2
+  );
+  // useState<SelectedRepoFile[]>([]);
   const [loadingFiles, setLoadingFiles] = useState<Set<string>>(new Set());
 
   const parseRepoUrl = (url: string) => {

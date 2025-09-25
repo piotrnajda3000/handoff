@@ -70,14 +70,37 @@ interface InteractiveCanvasProps {
 }
 
 // ## 2. Constants and Configuration
-const MIN_NODE_WIDTH = 120;
+const MIN_NODE_WIDTH = 10;
 const NODE_HEIGHT = 60;
-const NODE_PADDING = 20; // Padding inside the node for text
+const NODE_PADDING = 32; // Padding inside the node for text
 const GRID_SPACING = 200; // Increased for variable width nodes
 export const MIN_ZOOM = 0.1;
 export const MAX_ZOOM = 3;
 
-// ## 2.5. Helper Functions for Text Measurement
+// Color generation for edges
+const EDGE_COLORS = [
+  "#e74c3c", // Red
+  "#3498db", // Blue
+  "#2ecc71", // Green
+  "#f39c12", // Orange
+  "#9b59b6", // Purple
+  "#1abc9c", // Teal
+  "#e67e22", // Dark Orange
+  "#34495e", // Dark Blue Gray
+  "#e91e63", // Pink
+  "#00bcd4", // Cyan
+  "#4caf50", // Light Green
+  "#ff9800", // Amber
+  "#673ab7", // Deep Purple
+  "#795548", // Brown
+  "#607d8b", // Blue Gray
+];
+
+// Tree layout constants
+const TREE_LEVEL_HEIGHT = 150; // Vertical spacing between tree levels
+const TREE_NODE_SPACING = 50; // Minimum horizontal spacing between nodes
+
+// ## 2.5. Helper Functions for Text Measurement and Color Generation
 function calculateTextWidth(text: string, fontSize: number = 12): number {
   // Create a temporary canvas to measure text width
   const canvas = document.createElement("canvas");
@@ -88,8 +111,24 @@ function calculateTextWidth(text: string, fontSize: number = 12): number {
   const metrics = context.measureText(text);
   canvas.remove();
 
-  // Return width plus padding, with minimum width
-  return Math.max(MIN_NODE_WIDTH, metrics.width + NODE_PADDING * 2);
+  // Return width plus padding, with minimum width and maximum cap for very long names
+  const calculatedWidth = metrics.width + NODE_PADDING * 2;
+  return Math.max(MIN_NODE_WIDTH, Math.min(calculatedWidth, 500)); // Max width of 400px
+}
+
+// Generate consistent color for a node ID
+function getNodeColor(nodeId: string): string {
+  // Simple hash function to get consistent color index
+  let hash = 0;
+  for (let i = 0; i < nodeId.length; i++) {
+    const char = nodeId.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash = hash & hash; // Convert to 32-bit integer
+  }
+
+  // Use absolute value and modulo to get color index
+  const colorIndex = Math.abs(hash) % EDGE_COLORS.length;
+  return EDGE_COLORS[colorIndex];
 }
 
 // ## 3. Canvas Action Functions - Pure functions for testability
@@ -298,57 +337,273 @@ export function InteractiveCanvas({
   }, [nodePositions]);
 
   // ### 4.4. Computed Data
-  // #### 4.4.1. Generate file nodes data with positions
+  // #### 4.4.1. Pre-calculate all node widths for layout planning
+  const nodeWidths = useMemo((): number[] => {
+    return files.map((file) => {
+      const lastTwoFilePathParts = file.path?.split("/").slice(-2).join("/");
+      const displayText = lastTwoFilePathParts || file.name;
+      return calculateTextWidth(displayText);
+    });
+  }, [files]);
+
+  // #### 4.4.2. Generate file nodes data with positions using tree or grid layout
   const fileNodes = useMemo((): FileNodeData[] => {
     return files.map((file, index) => {
-      const displayText = file.path || file.name;
-      const width = calculateTextWidth(displayText);
+      const lastTwoFilePathParts = file.path?.split("/").slice(-2).join("/");
+      const displayText = lastTwoFilePathParts || file.name;
+      const width = nodeWidths[index];
+      const nodeId = `file-${index}`;
+
+      // Get position from state, or calculate using tree/grid layout
+      let position = nodePositions[nodeId];
+
+      if (!position) {
+        if (edges && edges.length > 0) {
+          // Use tree layout if edges are available
+          const treePositions = calculateTreeLayout(files, edges, nodeWidths);
+          position =
+            treePositions[nodeId] ||
+            calculateInitialPosition(index, files.length, nodeWidths);
+        } else {
+          // Fall back to grid layout
+          position = calculateInitialPosition(index, files.length, nodeWidths);
+        }
+      }
+
       return {
-        id: `file-${index}`,
+        id: nodeId,
         name: file.name,
         displayText,
         width,
-        position:
-          nodePositions[`file-${index}`] ||
-          calculateInitialPosition(index, files.length),
+        position,
       };
     });
-  }, [files, nodePositions]);
+  }, [files, edges, nodePositions, nodeWidths]);
 
   // ### 4.5. Helper Functions
-  // #### 4.5.1. Calculate initial grid position for nodes
+
+  // #### 4.5.1. Tree Layout Algorithm
+  function calculateTreeLayout(
+    files: FileWithName[],
+    edges: Edge[],
+    nodeWidths: number[]
+  ): Record<string, NodePosition> {
+    // Build dependency graph from edges
+    const dependencyGraph = new Map<string, Set<string>>(); // nodeId -> Set of dependent nodeIds
+    const reverseDependencyGraph = new Map<string, Set<string>>(); // nodeId -> Set of dependency nodeIds
+
+    // Initialize all nodes
+    files.forEach((_, index) => {
+      const nodeId = `file-${index}`;
+      dependencyGraph.set(nodeId, new Set());
+      reverseDependencyGraph.set(nodeId, new Set());
+    });
+
+    // Build the dependency relationships from edges
+    edges.forEach((edge) => {
+      if (dependencyGraph.has(edge.from) && dependencyGraph.has(edge.to)) {
+        // edge.from depends on edge.to (from -> to)
+        dependencyGraph.get(edge.from)!.add(edge.to);
+        // edge.to has edge.from as a dependent
+        reverseDependencyGraph.get(edge.to)!.add(edge.from);
+      }
+    });
+
+    // Find nodes with most dependents (root candidates)
+    const nodesByDependentCount = Array.from(dependencyGraph.keys())
+      .map((nodeId) => ({
+        nodeId,
+        dependentCount: reverseDependencyGraph.get(nodeId)?.size || 0,
+        dependencyCount: dependencyGraph.get(nodeId)?.size || 0,
+      }))
+      .sort((a, b) => {
+        // Sort by dependent count descending, then by dependency count ascending
+        if (b.dependentCount !== a.dependentCount) {
+          return b.dependentCount - a.dependentCount;
+        }
+        return a.dependencyCount - b.dependencyCount;
+      });
+
+    // Perform level-based layout
+    const levels: string[][] = [];
+    const visited = new Set<string>();
+    const nodeToLevel = new Map<string, number>();
+
+    // Helper function to assign levels using BFS
+    function assignLevels(rootNodes: string[]) {
+      const queue: { nodeId: string; level: number }[] = rootNodes.map(
+        (nodeId) => ({ nodeId, level: 0 })
+      );
+
+      while (queue.length > 0) {
+        const { nodeId, level } = queue.shift()!;
+
+        if (visited.has(nodeId)) continue;
+        visited.add(nodeId);
+
+        // Ensure levels array has enough elements
+        while (levels.length <= level) {
+          levels.push([]);
+        }
+
+        levels[level].push(nodeId);
+        nodeToLevel.set(nodeId, level);
+
+        // Add dependents to next level
+        const dependents = reverseDependencyGraph.get(nodeId) || new Set();
+        dependents.forEach((dependent) => {
+          if (!visited.has(dependent)) {
+            queue.push({ nodeId: dependent, level: level + 1 });
+          }
+        });
+      }
+    }
+
+    // Start with nodes that have the most dependents (likely root nodes)
+    const rootCandidates = nodesByDependentCount
+      .slice(0, Math.max(1, Math.ceil(nodesByDependentCount.length * 0.1))) // Take top 10% or at least 1
+      .map((item) => item.nodeId);
+
+    assignLevels(rootCandidates);
+
+    // Handle any remaining unvisited nodes (isolated nodes)
+    const unvisitedNodes = Array.from(dependencyGraph.keys()).filter(
+      (nodeId) => !visited.has(nodeId)
+    );
+    if (unvisitedNodes.length > 0) {
+      // Add them to the last level or create a new level
+      const lastLevel = levels.length > 0 ? levels.length : 0;
+      while (levels.length <= lastLevel) {
+        levels.push([]);
+      }
+      levels[lastLevel].push(...unvisitedNodes);
+      unvisitedNodes.forEach((nodeId) => nodeToLevel.set(nodeId, lastLevel));
+    }
+
+    // Calculate positions for each level
+    const positions: Record<string, NodePosition> = {};
+
+    levels.forEach((levelNodes, levelIndex) => {
+      const y = levelIndex * TREE_LEVEL_HEIGHT + NODE_HEIGHT / 2 + 60; // 60px top offset
+
+      // Calculate total width needed for this level
+      const totalWidth =
+        levelNodes.reduce((sum, nodeId) => {
+          const index = parseInt(nodeId.replace("file-", ""));
+          return (
+            sum + (nodeWidths[index] || MIN_NODE_WIDTH) + TREE_NODE_SPACING
+          );
+        }, 0) - TREE_NODE_SPACING; // Remove last spacing
+
+      // Start x position to center the level
+      let currentX = -totalWidth / 2;
+
+      levelNodes.forEach((nodeId) => {
+        const index = parseInt(nodeId.replace("file-", ""));
+        const nodeWidth = nodeWidths[index] || MIN_NODE_WIDTH;
+
+        // Position node with its center
+        currentX += nodeWidth / 2;
+        positions[nodeId] = {
+          x: currentX,
+          y: y,
+        };
+        currentX += nodeWidth / 2 + TREE_NODE_SPACING;
+      });
+    });
+
+    return positions;
+  }
+
+  // #### 4.5.2. Calculate initial grid position for nodes with dynamic spacing (fallback)
   function calculateInitialPosition(
     index: number,
-    totalFiles: number
+    totalFiles: number,
+    nodeWidths: number[] = []
   ): NodePosition {
     const nodesPerRow = Math.ceil(Math.sqrt(totalFiles));
     const row = Math.floor(index / nodesPerRow);
     const col = index % nodesPerRow;
 
+    // Calculate dynamic spacing based on node widths
+    let maxWidthInRow = MIN_NODE_WIDTH;
+    if (nodeWidths.length > 0) {
+      // Find the maximum width in the current row
+      const rowStart = row * nodesPerRow;
+      const rowEnd = Math.min(rowStart + nodesPerRow, totalFiles);
+      for (let i = rowStart; i < rowEnd; i++) {
+        if (nodeWidths[i]) {
+          maxWidthInRow = Math.max(maxWidthInRow, nodeWidths[i]);
+        }
+      }
+    }
+
+    // Use dynamic spacing with padding
+    const dynamicSpacing = Math.max(GRID_SPACING, maxWidthInRow + 60); // 60px padding
+
+    // Calculate cumulative X position based on actual widths in the row
+    let xPosition = 0;
+    if (nodeWidths.length > 0) {
+      // Calculate position based on actual widths of previous nodes in the row
+      const rowStart = row * nodesPerRow;
+      for (let i = 0; i < col; i++) {
+        const nodeIndex = rowStart + i;
+        if (nodeIndex < nodeWidths.length) {
+          xPosition += (nodeWidths[nodeIndex] || MIN_NODE_WIDTH) + 40; // 40px gap between nodes
+        } else {
+          xPosition += MIN_NODE_WIDTH + 40;
+        }
+      }
+      // Add half width of current node to center it
+      xPosition += (nodeWidths[index] || MIN_NODE_WIDTH) / 2;
+      // Add some base offset
+      xPosition += 60;
+    } else {
+      // Fallback to simple grid
+      xPosition = col * dynamicSpacing + MIN_NODE_WIDTH / 2;
+    }
+
     return {
-      x: col * GRID_SPACING + MIN_NODE_WIDTH / 2,
-      y: row * GRID_SPACING + NODE_HEIGHT / 2,
+      x: xPosition,
+      y: row * (NODE_HEIGHT + 80) + NODE_HEIGHT / 2 + 60, // 80px vertical gap, 60px top offset
     };
   }
 
   // ### 4.6. Initialization Effects
-  // #### 4.6.1. Initialize node positions when files change
+  // #### 4.6.1. Initialize node positions when files change using tree or grid layout
   useEffect(() => {
-    const initialPositions: Record<string, NodePosition> = {};
-    files.forEach((_, index) => {
-      const nodeId = `file-${index}`;
-      if (!nodePositions[nodeId]) {
+    const newNodeIds = files.map((_, index) => `file-${index}`);
+    const missingNodes = newNodeIds.filter((nodeId) => !nodePositions[nodeId]);
+
+    let initialPositions: Record<string, NodePosition> = {};
+
+    // Use tree layout if we have edges, otherwise fall back to grid layout
+    if (edges && edges.length > 0) {
+      // Calculate tree layout for all nodes
+      const treePositions = calculateTreeLayout(files, edges, nodeWidths);
+
+      // Apply tree positions to ALL nodes when we have edges
+      newNodeIds.forEach((nodeId) => {
+        if (treePositions[nodeId]) {
+          initialPositions[nodeId] = treePositions[nodeId];
+        }
+      });
+    } else {
+      // Fall back to grid layout for missing nodes only
+      missingNodes.forEach((nodeId) => {
+        const index = parseInt(nodeId.replace("file-", ""));
         initialPositions[nodeId] = calculateInitialPosition(
           index,
-          files.length
+          files.length,
+          nodeWidths
         );
-      }
-    });
+      });
+    }
 
     if (Object.keys(initialPositions).length > 0) {
-      setNodePositions((prev) => ({ ...prev, ...initialPositions }));
+      setNodePositions(initialPositions); // Replace all positions instead of merging
     }
-  }, [files, nodePositions]);
+  }, [files, edges, nodeWidths]); // Remove nodePositions from dependencies to avoid blocking
 
   // ### 4.7. D3 Setup Effects
   // #### 4.7.1. Initialize SVG and setup D3 behaviors (only once)
@@ -481,18 +736,66 @@ export function InteractiveCanvas({
     const unitX = dx / distance;
     const unitY = dy / distance;
 
-    // ##### 4.5.2.4. Calculate connection points at node edges using actual node dimensions
+    // ##### 4.5.2.4. Helper function to find intersection with rectangle edge
+    const findRectangleIntersection = (
+      centerX: number,
+      centerY: number,
+      width: number,
+      height: number,
+      dirX: number,
+      dirY: number
+    ) => {
+      const halfWidth = width / 2;
+      const halfHeight = height / 2;
+
+      // Calculate time to intersection for each edge
+      const tTop = dirY !== 0 ? (-halfHeight - 0) / dirY : Infinity;
+      const tBottom = dirY !== 0 ? (halfHeight - 0) / dirY : Infinity;
+      const tLeft = dirX !== 0 ? (-halfWidth - 0) / dirX : Infinity;
+      const tRight = dirX !== 0 ? (halfWidth - 0) / dirX : Infinity;
+
+      // Find the smallest positive t (closest intersection in the direction)
+      const candidates = [tTop, tBottom, tLeft, tRight].filter((t) => t > 0);
+      const t = Math.min(...candidates);
+
+      if (t === Infinity) {
+        // Fallback to center if no valid intersection
+        return { x: centerX, y: centerY };
+      }
+
+      return {
+        x: centerX + dirX * t,
+        y: centerY + dirY * t,
+      };
+    };
+
+    // ##### 4.5.2.5. Calculate connection points at rectangle edges
     // From node: start from edge in direction of target
-    const fromRadius = Math.max(fromNode.width, NODE_HEIGHT) / 2;
-    const x1 = fromPos.x + unitX * fromRadius;
-    const y1 = fromPos.y + unitY * fromRadius;
+    const fromEdge = findRectangleIntersection(
+      fromPos.x,
+      fromPos.y,
+      fromNode.width,
+      NODE_HEIGHT,
+      unitX,
+      unitY
+    );
 
-    // To node: end at edge from direction of source
-    const toRadius = Math.max(toNode.width, NODE_HEIGHT) / 2;
-    const x2 = toPos.x - unitX * toRadius;
-    const y2 = toPos.y - unitY * toRadius;
+    // To node: end at edge from direction of source (opposite direction)
+    const toEdge = findRectangleIntersection(
+      toPos.x,
+      toPos.y,
+      toNode.width,
+      NODE_HEIGHT,
+      -unitX,
+      -unitY
+    );
 
-    return { x1, y1, x2, y2 };
+    return {
+      x1: fromEdge.x,
+      y1: fromEdge.y,
+      x2: toEdge.x,
+      y2: toEdge.y,
+    };
   };
 
   // ### 4.8. Rendering Effects
@@ -524,7 +827,7 @@ export function InteractiveCanvas({
       .enter()
       .append("line")
       .attr("class", "edge")
-      .attr("stroke", "var(--mantine-color-gray-6)")
+      .attr("stroke", (d) => getNodeColor(d.from))
       .attr("stroke-width", 2)
       .attr("marker-end", "url(#arrow)")
       .attr("opacity", 0.7);
@@ -535,6 +838,7 @@ export function InteractiveCanvas({
     // ##### 4.8.1.5b. Apply click handlers and visual feedback to all edges
     allEdges
       .style("cursor", (d) => (d.analysis ? "pointer" : "default"))
+      .attr("stroke", (d) => getNodeColor(d.from)) // Ensure all edges use node-based colors
       .attr("stroke-width", (d) => (d.analysis ? 3 : 2))
       .attr("opacity", (d) => (d.analysis ? 0.8 : 0.7))
       .on("click", function (event, d) {
@@ -554,12 +858,18 @@ export function InteractiveCanvas({
       })
       .on("mouseenter", function (_event, d) {
         if (d.analysis) {
-          d3.select(this).attr("stroke", "var(--mantine-color-green-5)");
+          // Brighten the edge color on hover while maintaining the node-based color
+          const baseColor = getNodeColor(d.from);
+          d3.select(this).attr(
+            "stroke",
+            d3.rgb(baseColor).brighter(0.5).toString()
+          );
         }
       })
       .on("mouseleave", function (_event, d) {
         if (d.analysis) {
-          d3.select(this).attr("stroke", "var(--mantine-color-gray-6)");
+          // Return to original node-based color
+          d3.select(this).attr("stroke", getNodeColor(d.from));
         }
       });
 
